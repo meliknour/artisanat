@@ -2,226 +2,73 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>نموذج بطاقة تقنية للمنتوج</title>
+  <title>بطاقة المنتج</title>
   <style>
     body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
     .container { max-width:900px; margin:auto; background:#fff; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
     h1 { text-align:center; color:#0056b3; border-bottom:3px solid #0056b3; padding-bottom:10px; }
-    label { font-weight:bold; margin-top:12px; display:block; }
-    input[type="text"], textarea { width:100%; padding:8px; margin-top:5px; border:1px solid #bbb; border-radius:5px; }
-    textarea { resize:vertical; min-height:70px; }
-    .options { margin:8px 0; }
-    .options label { font-weight:normal; margin-left:15px; }
-    button { margin-top:20px; padding:12px; border:none; border-radius:6px; cursor:pointer; }
-    #showButton { background:#28a745; color:#fff; display:block; width:50%; margin:20px auto 0; }
-    #backButton { background:#6c757d; color:#fff; display:block; width:30%; margin:20px auto 0; }
-    #pdfButton { background:#007bff; color:#fff; display:block; width:30%; margin:20px auto 0; }
-    #displayOutput { display:none; }
-    #displayOutput table { width:100%; border-collapse:collapse; margin-top:20px; }
-    #displayOutput th, #displayOutput td { border:1px solid #ddd; padding:10px; text-align:right; }
-    #displayOutput th { background:#e9ecef; width:35%; }
-    .image-section { display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:15px; }
-    #outputImage { max-width:300px; max-height:250px; border:1px solid #ddd; border-radius:4px; }
+    #outputImage { max-width:100%; max-height:250px; border:1px solid #ddd; border-radius:4px; margin-bottom:15px; display:block; margin:auto; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { border:1px solid #ddd; padding:10px; text-align:right; }
+    th { background:#e9ecef; width:35%; }
   </style>
 </head>
 <body>
 
-<div class="container" id="inputForm">
-  <h1>نموذج بطاقة تقنية للمنتوج</h1>
-
-  <!-- رابط صورة المنتج -->
-  <label>رابط صورة المنتج (URL):</label>
-  <input type="text" id="productImageUrl" value="https://via.placeholder.com/300">
-
-  <!-- باقي الحقول -->
-  <label>إسم المنتج:</label>
-  <input type="text" id="productName" value="لوحة فنية">
-
-  <label>نوع المنتج:</label>
-  <div class="options">
-    <label><input type="checkbox" name="productType" value="يدوي"> يدوي</label>
-    <label><input type="checkbox" name="productType" value="يدوي بالآلة"> يدوي بالآلة</label>
-    <label><input type="checkbox" name="productType" value="آلي"> آلي</label>
-  </div>
-
-  <label>الاستعمالات:</label>
-  <div class="options">
-    <label><input type="checkbox" name="uses" value="التزيين"> التزيين</label>
-    <label><input type="checkbox" name="uses" value="الاستعمال اليومي"> الاستعمال اليومي</label>
-    <label><input type="checkbox" name="uses" value="نفعي"> نفعي</label>
-  </div>
-
-  <label>الحجم:</label>
-  <input type="text" id="size" value="80 سم × 60 سم">
-
-  <label>الوزن:</label>
-  <div class="options">
-    <label><input type="checkbox" name="weight" value="خفيف"> خفيف</label>
-    <label><input type="checkbox" name="weight" value="متوسط"> متوسط</label>
-    <label><input type="checkbox" name="weight" value="ثقيل"> ثقيل</label>
-  </div>
-
-  <label>نوع التزيين والرموز:</label>
-  <div class="options">
-    <label><input type="checkbox" name="decoration" value="بدون رموز"> بدون رموز</label>
-    <label><input type="checkbox" name="decoration" value="نقوش"> نقوش</label>
-    <label><input type="checkbox" name="decoration" value="رموز تقليدية"> رموز تقليدية</label>
-  </div>
-
-  <label>الإنتاج:</label>
-  <div class="options">
-    <label><input type="checkbox" name="production" value="حرفي"> حرفي</label>
-    <label><input type="checkbox" name="production" value="مؤسسة"> مؤسسة</label>
-    <label><input type="checkbox" name="production" value="تعاونية"> تعاونية</label>
-  </div>
-
-  <label>مصدر المادة:</label>
-  <div class="options">
-    <label><input type="checkbox" name="materialSource" value="محلية"> محلية</label>
-    <label><input type="checkbox" name="materialSource" value="مستوردة"> مستوردة</label>
-  </div>
-
-  <label>المواد الأولية:</label>
-  <textarea id="rawMaterials">قماش، خشب أبيض، ألوان زيتية</textarea>
-
-  <label>مراحل الإنجاز:</label>
-  <textarea id="stages">بحث - تخطيط - تلوين</textarea>
-
-  <label>الأدوات المستعملة:</label>
-  <input type="text" id="tools" value="ريشة، سكين رسم">
-
-  <label>عدد المتدخلين:</label>
-  <input type="text" id="contributors" value="نجار فني">
-
-  <label>الألوان:</label>
-  <textarea id="colors">أحمر - أزرق - أصفر</textarea>
-
-  <label>مدة الإنجاز:</label>
-  <input type="text" id="duration" value="3 أشهر">
-
-  <label>التقنيات المستعملة:</label>
-  <textarea id="techniques">الرسم التجريدي والتعبيري</textarea>
-
-  <label>التقنيات المبتكرة:</label>
-  <textarea id="innovations">إدخال سعف النخيل</textarea>
-
-  <label>السعر:</label>
-  <input type="text" id="price" value="30.000 دج">
-
-  <button id="showButton" type="button" onclick="displayData()">إظهار البطاقة</button>
-</div>
-
-<div class="container" id="displayOutput">
+<div class="container">
   <h1>بطاقة تقنية للمنتوج</h1>
-  <div class="image-section">
-    <div id="qrcode"></div>
-    <img id="outputImage">
-  </div>
+  <img id="outputImage">
   <table id="outputTable"></table>
-  <button id="pdfButton" type="button" onclick="downloadPDF()">تحميل PDF</button>
-  <button id="backButton" type="button" onclick="editData()">تعديل البيانات</button>
 </div>
 
-<!-- مكتبات QR و PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-const inputForm = document.getElementById("inputForm");
-const displayOutput = document.getElementById("displayOutput");
-const outputImage = document.getElementById("outputImage");
-const outputTable = document.getElementById("outputTable");
-const qrContainer = document.getElementById("qrcode");
-
-// قراءة تشيك بوكس
-function getCheckedValues(name) {
-  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
-              .map(cb => cb.value)
-              .join(" - ");
-}
-
-// عرض البطاقة
-function displayData() {
-  const productName = document.getElementById("productName").value;
-  const productImageUrl = document.getElementById("productImageUrl").value;
-
-  const data = {
-    "إسم المنتج": productName,
-    "نوع المنتج": getCheckedValues("productType"),
-    "الاستعمالات": getCheckedValues("uses"),
-    "الحجم": document.getElementById("size").value,
-    "الوزن": getCheckedValues("weight"),
-    "نوع التزيين والرموز": getCheckedValues("decoration"),
-    "الإنتاج": getCheckedValues("production"),
-    "مصدر المادة": getCheckedValues("materialSource"),
-    "المواد الأولية": document.getElementById("rawMaterials").value,
-    "مراحل الإنجاز": document.getElementById("stages").value,
-    "الأدوات المستعملة": document.getElementById("tools").value,
-    "عدد المتدخلين": document.getElementById("contributors").value,
-    "الألوان": document.getElementById("colors").value,
-    "مدة الإنجاز": document.getElementById("duration").value,
-    "التقنيات المستعملة": document.getElementById("techniques").value,
-    "التقنيات المبتكرة": document.getElementById("innovations").value,
-    "السعر": document.getElementById("price").value
+  const firebaseConfig = {
+    apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+    authDomain: "artisanat-161f3.firebaseapp.com",
+    projectId: "artisanat-161f3",
+    storageBucket: "artisanat-161f3.firebasestorage.app",
+    messagingSenderId: "203989144161",
+    appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+    measurementId: "G-9350J62Z5H"
   };
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  // عرض الصورة
-  outputImage.src = productImageUrl;
-
-  // بناء الجدول
-  let tableHTML = "";
-  for (const key in data) {
-    tableHTML += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
+  function getIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
   }
-  outputTable.innerHTML = tableHTML;
 
-  // توليد QR Code للرابط
-  qrContainer.innerHTML = "";
-  new QRCode(qrContainer, {
-    text: productImageUrl,
-    width: 100,
-    height: 100
-  });
+  async function loadProduct() {
+    const id = getIdFromUrl();
+    if (!id) {
+      document.getElementById("outputTable").innerHTML = "<tr><td>❌ لم يتم تحديد المنتج</td></tr>";
+      return;
+    }
 
-  inputForm.style.display = "none";
-  displayOutput.style.display = "block";
-}
+    const doc = await db.collection("products").doc(id).get();
+    if (!doc.exists) {
+      document.getElementById("outputTable").innerHTML = "<tr><td>❌ المنتج غير موجود</td></tr>";
+      return;
+    }
 
-// رجوع للتعديل
-function editData() {
-  displayOutput.style.display = "none";
-  inputForm.style.display = "block";
-}
+    const data = doc.data();
+    document.getElementById("outputImage").src = data.productImageUrl;
 
-// تحميل PDF بدون الأزرار
-async function downloadPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p", "pt", "a4");
+    let tableHTML = "";
+    for (const key in data) {
+      if (key !== "productImageUrl" && key !== "createdAt") {
+        tableHTML += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
+      }
+    }
+    document.getElementById("outputTable").innerHTML = tableHTML;
+  }
 
-  const element = document.getElementById("displayOutput");
-
-  // إخفاء الأزرار مؤقتاً 
-  const pdfButton = document.getElementById("pdfButton");
-  const backButton = document.getElementById("backButton");
-  pdfButton.style.display = "none";
-  backButton.style.display = "none";
-
-  const canvas = await html2canvas(element, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
-
-  const imgProps = doc.getImageProperties(imgData);
-  const pdfWidth = doc.internal.pageSize.getWidth();
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-  doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-  doc.save("بطاقة-المنتوج.pdf");
-
-  // إرجاع الأزرار
-  pdfButton.style.display = "block";
-  backButton.style.display = "block";
-}
+  loadProduct();
 </script>
-
 </body>
 </html>
