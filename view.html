@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض المنتج</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <h2>تفاصيل المنتج</h2>
+  <div id="details"></div>
+  <div id="qrCode"></div>
+  <button onclick="downloadPDF()">تحميل PDF</button>
+
+  <script>
+    const firebaseConfig = {
+      // ضع هنا إعدادات Firebase
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
+
+    let productData = null;
+
+    async function loadProduct() {
+      const docRef = await db.collection("products").doc(id).get();
+      productData = docRef.data();
+      const div = document.getElementById("details");
+      div.innerHTML = `
+        <p><b>اسم المنتج:</b> ${productData.name}</p>
+        <p><b>النوع:</b> ${productData.type}</p>
+        <p><b>الاستعمال:</b> ${productData.usage}</p>
+        <p><b>الحجم:</b> ${productData.size}</p>
+        <p><b>الوزن:</b> ${productData.weight}</p>
+        <p><b>التزيين:</b> ${productData.decoration}</p>
+        <p><b>الإنتاج:</b> ${productData.production}</p>
+        <p><b>المصدر:</b> ${productData.source}</p>
+        <p><b>المواد:</b> ${productData.materials}</p>
+        <p><b>المراحل:</b> ${productData.steps}</p>
+        <p><b>الأدوات:</b> ${productData.tools}</p>
+        <p><b>المتدخلين:</b> ${productData.people}</p>
+        <p><b>الألوان:</b> ${productData.colors}</p>
+        <p><b>المدة:</b> ${productData.duration}</p>
+        <p><b>التقنيات:</b> ${productData.techniques}</p>
+        <p><b>المبتكرة:</b> ${productData.innovation}</p>
+        <p><b>السعر:</b> ${productData.price}</p>
+      `;
+
+      new QRCode(document.getElementById("qrCode"), {
+        text: window.location.href,
+        width: 128,
+        height: 128
+      });
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 20;
+      doc.setFontSize(16);
+      doc.text("بطاقة تقنية للمنتوج", 105, y, { align: "center" });
+      y += 10;
+
+      Object.keys(productData).forEach(key => {
+        doc.setFontSize(12);
+        doc.text(`${key}: ${productData[key]}`, 10, y);
+        y += 8;
+      });
+
+      const qrCanvas = document.querySelector("#qrCode canvas");
+      if(qrCanvas){
+        const qrData = qrCanvas.toDataURL("image/png");
+        doc.addImage(qrData, "PNG", 80, y+10, 50, 50);
+      }
+
+      doc.save("fiche-technique.pdf");
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
