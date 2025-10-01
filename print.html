@@ -10,7 +10,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // ✅ Firebase Config (حافظت على قيمك الحالية)
+    // ✅ Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
       authDomain: "artisanat-161f3.firebaseapp.com",
@@ -26,26 +26,20 @@
 
     // ✅ جلب id من الرابط
     const params = new URLSearchParams(window.location.search);
-    const productId = params.get("id"); // هذا هو الرقم الذي سنستخدمه
+    const productId = params.get("id");
 
-    // دالة لتنسيق الرقم: تحويل "1" إلى "001" أو "25" إلى "025"
+    // دالة لتنسيق الرقم: تحويل "1" إلى "001"
     function formatProductId(id) {
         if (!id) return "---";
-        // إذا كان الـ id نصياً أو رقمياً، نحاول تنسيقه إلى 3 خانات
-        // يفترض أن الـ id عبارة عن رقم أو يمكن تحويله لرقم.
         const num = parseInt(id);
-        if (isNaN(num)) {
-            // إذا لم يكن رقم، نستخدم الـ id كما هو
-            return id; 
-        }
-        // استخدام padStart لإضافة أصفار في البداية
-        return String(num).padStart(3, '0'); 
+        if (isNaN(num)) return id;
+        return String(num).padStart(3, '0');
     }
 
     const container = document.getElementById("productDetails");
     const titleElement = document.getElementById("mainTitle");
     
-    // تحديث العنوان برقم المنتج المنسق
+    // 💡 تحديث العنوان برقم المنتج المنسق
     const formattedId = formatProductId(productId);
     if (titleElement) {
         titleElement.innerHTML = `📝 تفاصيل المنتج <span class="product-id-display">#${formattedId}</span>`;
@@ -284,6 +278,7 @@
         padding: 4px 8px;
         border-radius: 6px;
         display: inline-block;
+        vertical-align: middle; /* لتحسين المحاذاة */
     }
 
     .product-header {
@@ -299,11 +294,11 @@
       font-size: 1.8rem;
     }
 
-    /* التعديل الأول: تحديد حجم ثابت للصورة 200x200 */
+    /* 💡 تثبيت حجم الصورة 200x200 على الشاشة */
     .product-image {
-      width: 200px; /* تحديد العرض */
-      height: 200px; /* تحديد الارتفاع */
-      object-fit: cover; /* لضمان ملء الصورة للحجم المحدد دون تشويه */
+      width: 200px; 
+      height: 200px;
+      object-fit: cover; /* الأهم: يثبت الحجم ويقص الزوائد */
       max-width: 100%;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
@@ -431,91 +426,88 @@
       animation-delay: 0.2s;
     }
     
-    /* التعديل الثاني: ضبط التنسيق للطباعة */
+    
+    /* ======================================= */
+    /* 💡 تنسيقات خاصة بالطباعة فقط (@media print) */
+    /* ======================================= */
+
     @media print {
-      /* إخفاء العناصر غير الضرورية للطباعة */
+        /* إزالة الخلفيات والألوان لتقليل استهلاك الحبر */
       body {
-        background: none; /* إزالة خلفية الصفحة عند الطباعة */
+        background: #fff !important; /* خلفية بيضاء للطباعة */
         padding: 0;
-        line-height: 1.4; /* تقليل تباعد الأسطر للطباعة */
-        font-size: 10pt; /* تصغير حجم الخط العام */
+        font-size: 10pt; /* تصغير الخط قليلاً */
       }
 
       .container {
-        box-shadow: none; /* إزالة الظل */
+        box-shadow: none !important; /* إزالة الظل */
+        border: none !important;
         margin: 0;
-        border: none;
-        max-width: 100%;
-        padding: 10px; /* تقليل الحشوة */
-        overflow: visible;
+        padding: 0 10px; /* حشوة خفيفة */
       }
       
       .container::before {
-          content: none; /* إزالة الشريط العلوي الملون */
+          content: none !important; /* إزالة الشريط الملون */
       }
 
-      /* توحيد عناوين المنتج */
-      .product-header h2 {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-      }
+        /* تعديل شكل العنوان ليناسب الطباعة */
+        h1 {
+            color: #333 !important;
+            font-size: 1.5rem !important;
+            padding-bottom: 10px;
+        }
+        
+        h1::after {
+            background: #ccc !important;
+            width: 80px !important;
+        }
 
-      /* تصغير صورة المنتج قليلاً للطباعة وتثبيت حجمها */
+        /* تصغير رقم المنتج في الطباعة */
+        .product-id-display {
+            font-size: 1rem;
+            color: #555;
+            background: none;
+            border: 1px solid #ccc;
+        }
+        
+        /* تثبيت حجم الصورة وتصغيرها قليلاً للطباعة */
       .product-image {
         width: 150px; 
         height: 150px;
-        margin: 10px auto; /* توسيط الصورة */
-        border: 1px solid #ccc; /* إضافة إطار خفيف */
-        box-shadow: none;
-        transform: none;
+        box-shadow: none !important;
+        border: 1px solid #eee;
       }
 
-      /* ضبط شبكة التفاصيل للطباعة */
+      /* ضبط شبكة التفاصيل للطباعة (عرضها بعمودين) */
       .product-details-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 عمود في الطباعة لترشيد المساحة */
+        grid-template-columns: 1fr 1fr; 
         gap: 10px;
       }
 
       .detail-item {
         padding: 8px;
-        background: #f0f0f0; /* خلفية فاتحة موحدة */
-        border-right: none;
-        border-bottom: 1px dotted #ccc; /* خط فاصل خفيف */
-        transform: none;
-        box-shadow: none;
-      }
-      
-      .detail-icon {
-          margin-left: 5px;
-          font-size: 1rem;
-      }
-      
-      .detail-label, .detail-value {
-          font-size: 0.85rem;
-      }
-
-      /* إخفاء أزرار الإجراءات مثل زر الرجوع في الطباعة */
-      .action-buttons {
-          display: none;
-      }
-      
-      /* إزالة الأنماط التي تعتمد على الألوان الزاهية */
-      h1::after {
-          background: #333;
+        background: #f9f9f9; /* خلفية خفيفة جداً */
+        border-radius: 5px;
+        border-right: 3px solid #ccc; /* إطار خفيف */
       }
       
-      /* تنسيق رقم المنتج في الطباعة */
-      .product-id-display {
-          color: #333;
-          background: none;
-          font-weight: 700;
+      .detail-label {
+          color: #555;
       }
+      
+      /* إخفاء الأزرار وأي عناصر تفاعلية */
+      .action-buttons, .product-image:hover, .detail-item:hover, .btn-back {
+          display: none !important;
+          transform: none !important;
+          box-shadow: none !important;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 id="mainTitle">📝 تفاصيل المنتج</h1>     <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
+    <h1 id="mainTitle">📝 تفاصيل المنتج</h1>
+    <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
   </div>
 </body>
 </html>
