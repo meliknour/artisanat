@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قائمة المنتجات</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <style>
+    body {background:#eef2f7;font-family:Arial,sans-serif;padding:20px;}
+    h2{text-align:center;color:#333}
+    table{width:100%;border-collapse:collapse;margin-top:20px;background:white;border-radius:10px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,0.1);}
+    th,td{padding:12px;border-bottom:1px solid #ddd;text-align:center;}
+    th{background:#0056b3;color:white;}
+    tr:hover{background:#f1f1f1}
+    a{color:#0056b3;text-decoration:none;font-weight:bold}
+    .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
+  </style>
+</head>
+<body>
+  <h2>📋 قائمة المنتجات</h2>
+  <div id="loading" class="loading">⏳ جارٍ تحميل البيانات...</div>
+  <table id="productsTable" style="display:none">
+    <thead>
+      <tr>
+        <th>اسم المنتج</th>
+        <th>المعرف (ID)</th>
+        <th>الرابط</th>
+        <th>QR</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="productsBody"></tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const tbody = document.getElementById("productsBody");
+    const loading = document.getElementById("loading");
+    const table = document.getElementById("productsTable");
+
+    async function loadProducts() {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      loading.style.display = "none";
+      table.style.display = "table";
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.name || "بدون اسم"}</td>
+          <td>${docSnap.id}</td>
+          <td><a href="edit.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
+          <td><a href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://meliknour.github.io/artisanat/edit.html?id=${docSnap.id}" target="_blank">📷 QR</a></td>
+          <td>
+            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
+            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
+            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
