@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>قائمة المنتجات</title>
-  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <style>
     body {background:#eef2f7;font-family:Arial,sans-serif;padding:20px;}
     h2{text-align:center;color:#333}
@@ -14,7 +15,7 @@
     tr:hover{background:#f1f1f1}
     a{color:#0056b3;text-decoration:none;font-weight:bold}
     .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
-    .qr{width:80px;height:80px;}
+    img.qr{border:1px solid #ccc;border-radius:6px;}
   </style>
 </head>
 <body>
@@ -55,49 +56,32 @@
     const table = document.getElementById("productsTable");
 
     async function loadProducts() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "products"));
-        loading.style.display = "none";
-        table.style.display = "table";
+      const querySnapshot = await getDocs(collection(db, "products"));
+      loading.style.display = "none";
+      table.style.display = "table";
 
-        if (querySnapshot.empty) {
-          tbody.innerHTML = `<tr><td colspan="5">🚫 لا توجد منتجات بعد</td></tr>`;
-          return;
-        }
-
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const id = docSnap.id;
-          const name = data.name || "بدون اسم";
-          const viewUrl = `view.html?id=${id}`;
-          const fullUrl = `https://meliknour.github.io/artisanat/${viewUrl}`;
-
-          // توليد QR
-          const qrCanvas = document.createElement("canvas");
-          new QRious({
-            element: qrCanvas,
-            value: fullUrl,
-            size: 80
-          });
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${name}</td>
-            <td>${id}</td>
-            <td><a href="${viewUrl}" target="_blank">🔗 ${viewUrl}</a></td>
-            <td><img src="${qrCanvas.toDataURL()}" class="qr"></td>
-            <td>
-              <a href="${viewUrl}">👁 عرض</a> | 
-              <a href="edit.html?id=${id}">✏ تعديل</a> | 
-              <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error("خطأ في تحميل المنتجات:", err);
-        loading.innerText = "⚠️ خطأ في تحميل البيانات";
+      if (querySnapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="5">🚫 لا توجد منتجات</td></tr>`;
+        return;
       }
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        const viewUrl = `https://meliknour.github.io/artisanat/view.html?id=${docSnap.id}`;
+        tr.innerHTML = `
+          <td>${data.name || "بدون اسم"}</td>
+          <td>${docSnap.id}</td>
+          <td><a href="view.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
+          <td><img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${viewUrl}" alt="QR Code"></td>
+          <td>
+            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
+            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
+            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     loadProducts();
