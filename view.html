@@ -243,62 +243,125 @@
       animation-delay: 0.2s;
     }
 
-    /* تنسيقات الطباعة */
+    /* تنسيقات الطباعة المحسنة */
     @media print {
+      @page {
+        size: A4;
+        margin: 1.5cm;
+      }
+      
       body {
         background: white !important;
-        padding: 0;
+        padding: 0 !important;
         font-size: 12pt;
+        line-height: 1.4;
+        color: #000 !important;
       }
       
       .container {
-        box-shadow: none;
-        padding: 10px;
-        margin: 0;
-        max-width: 100%;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        border: none !important;
       }
       
       .container::before {
-        display: none;
+        display: none !important;
       }
       
-      .product-image {
-        width: 150px;
-        height: 150px;
-        box-shadow: none;
-      }
-      
-      .product-details-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-      
-      .detail-item {
-        padding: 8px;
-        page-break-inside: avoid;
-      }
-      
-      .detail-icon {
-        font-size: 1.2rem;
-      }
-      
-      .btn-back {
-        display: none;
+      .page-header {
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #333 !important;
+        padding-bottom: 10px !important;
       }
       
       h1 {
-        font-size: 18pt;
-        margin-bottom: 15px;
+        color: #000 !important;
+        font-size: 20pt !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 10px !important;
       }
       
-      .product-header h2 {
-        font-size: 16pt;
+      h1::after {
+        display: none !important;
       }
       
       .product-id {
-        background: #f0f0f0;
-        color: #333;
-        box-shadow: none;
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        font-size: 11pt !important;
+        padding: 5px 15px !important;
+      }
+      
+      .product-header {
+        margin-bottom: 20px !important;
+        padding-bottom: 15px !important;
+      }
+      
+      .product-header h2 {
+        font-size: 16pt !important;
+        color: #000 !important;
+      }
+      
+      .product-image {
+        width: 120px !important;
+        height: 120px !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+      }
+      
+      .product-details-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+        font-size: 10pt !important;
+      }
+      
+      .detail-item {
+        padding: 8px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #f9f9f9 !important;
+        border: 1px solid #ddd !important;
+        border-right: 3px solid #8b5a2b !important;
+        margin-bottom: 5px !important;
+      }
+      
+      .detail-item:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      
+      .detail-icon {
+        font-size: 1.2rem !important;
+      }
+      
+      .detail-label {
+        font-size: 9pt !important;
+        color: #000 !important;
+      }
+      
+      .detail-value {
+        font-size: 10pt !important;
+        color: #000 !important;
+      }
+      
+      .btn-back, .action-buttons {
+        display: none !important;
+      }
+      
+      /* منع تقسيم العناصر بين الصفحات */
+      .product-header, .page-header {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      
+      /* تحسين التباعد للطباعة */
+      * {
+        margin-top: 0 !important;
+        margin-bottom: 5px !important;
       }
     }
   </style>
@@ -307,14 +370,20 @@
   <div class="container">
     <div class="page-header">
       <h1>📝 تفاصيل المنتج</h1>
-      <div class="product-id">رقم المنتج: <span id="productNumber">001</span></div>
+      <div class="product-id">رقم المنتج: <span id="productNumber">⏳ جاري التحميل...</span></div>
     </div>
     <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+      getFirestore, 
+      collection, 
+      getDocs, 
+      query, 
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // ✅ Firebase Config
     const firebaseConfig = {
@@ -338,163 +407,179 @@
     const productNumberElement = document.getElementById("productNumber");
 
     // ✅ دالة لتنسيق رقم المنتج
-    function formatProductId(id) {
-      if (!id) return "001";
-      return String(id).padStart(3, '0');
+    function formatProductId(index) {
+      if (typeof index !== 'number' || index < 1) return "---";
+      return String(index).padStart(3, '0');
     }
-
-    // ✅ تحديث رقم المنتج في الواجهة
-    productNumberElement.textContent = formatProductId(productId);
 
     async function loadProduct() {
       if (!productId) {
-        container.innerHTML = "<p>❌ لم يتم تمرير معرف المنتج.</p>";
+        productNumberElement.textContent = "---";
+        container.innerHTML = "<p class='error-message'>❌ لم يتم تمرير معرف المنتج.</p>";
         return;
       }
 
       try {
-        const docRef = doc(db, "products", productId);
-        const docSnap = await getDoc(docRef);
+        // 💡 الخطوة 1: جلب كل المنتجات مرتبة حسب حقل 'timestamp' تصاعدياً
+        const productsCollection = collection(db, "products");
+        const q = query(productsCollection, orderBy("timestamp", "asc")); 
+        const querySnapshot = await getDocs(q);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        let productData = null;
+        let productIndex = -1;
+        
+        // 💡 الخطوة 2: البحث عن المنتج الحالي وتحديد فهرسه (ترتيبه)
+        querySnapshot.docs.forEach((doc, index) => {
+            if (doc.id === productId) {
+                productData = doc.data();
+                // تخزين الترتيب الفعلي (يبدأ من 1)
+                productIndex = index + 1; 
+            }
+        });
 
-          container.innerHTML = `
-            <div class="product-header">
-              <h2>${data.name || "منتج بدون اسم"}</h2>
-              <img src="${data.image || ""}" alt="صورة المنتج" class="product-image">
-            </div>
-            <div class="product-details-grid">
-              <div class="detail-item">
-                <span class="detail-icon">🏷️</span>
-                <div class="detail-content">
-                  <span class="detail-label">النوع</span>
-                  <span class="detail-value">${data.type || "-"}</span>
+        if (productData) {
+            // 💡 الخطوة 3: عرض رقم المنتج والبيانات
+            productNumberElement.textContent = formatProductId(productIndex);
+
+            container.innerHTML = `
+              <div class="product-header">
+                <h2>${productData.name || "منتج بدون اسم"}</h2>
+                <img src="${productData.image || ""}" alt="صورة المنتج" class="product-image">
+              </div>
+              <div class="product-details-grid">
+                <div class="detail-item">
+                  <span class="detail-icon">🏷️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">النوع</span>
+                    <span class="detail-value">${productData.type || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">💰</span>
+                  <div class="detail-content">
+                    <span class="detail-label">السعر</span>
+                    <span class="detail-value">${productData.price || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">⏱️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">مدة الإنجاز</span>
+                    <span class="detail-value">${productData.duration || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📏</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الحجم</span>
+                    <span class="detail-value">${productData.size || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">⚖️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الوزن</span>
+                    <span class="detail-value">${productData.weight || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🔧</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الاستعمال</span>
+                    <span class="detail-value">${productData.usage || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🎨</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الألوان</span>
+                    <span class="detail-value">${productData.colors || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">✨</span>
+                  <div class="detail-content">
+                    <span class="detail-label">نوع التزيين والرموز</span>
+                    <span class="detail-value">${productData.decoration || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🏭</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الإنتاج</span>
+                    <span class="detail-value">${productData.production || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📍</span>
+                  <div class="detail-content">
+                    <span class="detail-label">المصدر</span>
+                    <span class="detail-value">${productData.source || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">👥</span>
+                  <div class="detail-content">
+                    <span class="detail-label">عدد المتدخلين</span>
+                    <span class="detail-value">${productData.people || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🧱</span>
+                  <div class="detail-content">
+                    <span class="detail-label">المواد الأولية</span>
+                    <span class="detail-value">${productData.materials || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📋</span>
+                  <div class="detail-content">
+                    <span class="detail-label">مراحل الإنجاز</span>
+                    <span class="detail-value">${productData.steps || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🛠️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الأدوات المستعملة</span>
+                    <span class="detail-value">${productData.tools || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🔬</span>
+                  <div class="detail-content">
+                    <span class="detail-label">التقنيات المستعملة</span>
+                    <span class="detail-value">${productData.techniques || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">💡</span>
+                  <div class="detail-content">
+                    <span class="detail-label">التقنيات المبتكرة</span>
+                    <span class="detail-value">${productData.innovation || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📅</span>
+                  <div class="detail-content">
+                    <span class="detail-label">تاريخ الإضافة</span>
+                    <span class="detail-value">${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString() : "-"}</span>
+                  </div>
                 </div>
               </div>
-              <div class="detail-item">
-                <span class="detail-icon">💰</span>
-                <div class="detail-content">
-                  <span class="detail-label">السعر</span>
-                  <span class="detail-value">${data.price || "-"}</span>
-                </div>
+              <div class="action-buttons">
+                <a href="javascript:history.back()" class="btn-back">← العودة</a>
               </div>
-              <div class="detail-item">
-                <span class="detail-icon">⏱️</span>
-                <div class="detail-content">
-                  <span class="detail-label">مدة الإنجاز</span>
-                  <span class="detail-value">${data.duration || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📏</span>
-                <div class="detail-content">
-                  <span class="detail-label">الحجم</span>
-                  <span class="detail-value">${data.size || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">⚖️</span>
-                <div class="detail-content">
-                  <span class="detail-label">الوزن</span>
-                  <span class="detail-value">${data.weight || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🔧</span>
-                <div class="detail-content">
-                  <span class="detail-label">الاستعمال</span>
-                  <span class="detail-value">${data.usage || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🎨</span>
-                <div class="detail-content">
-                  <span class="detail-label">الألوان</span>
-                  <span class="detail-value">${data.colors || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">✨</span>
-                <div class="detail-content">
-                  <span class="detail-label">نوع التزيين والرموز</span>
-                  <span class="detail-value">${data.decoration || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🏭</span>
-                <div class="detail-content">
-                  <span class="detail-label">الإنتاج</span>
-                  <span class="detail-value">${data.production || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📍</span>
-                <div class="detail-content">
-                  <span class="detail-label">المصدر</span>
-                  <span class="detail-value">${data.source || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">👥</span>
-                <div class="detail-content">
-                  <span class="detail-label">عدد المتدخلين</span>
-                  <span class="detail-value">${data.people || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🧱</span>
-                <div class="detail-content">
-                  <span class="detail-label">المواد الأولية</span>
-                  <span class="detail-value">${data.materials || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📋</span>
-                <div class="detail-content">
-                  <span class="detail-label">مراحل الإنجاز</span>
-                  <span class="detail-value">${data.steps || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🛠️</span>
-                <div class="detail-content">
-                  <span class="detail-label">الأدوات المستعملة</span>
-                  <span class="detail-value">${data.tools || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🔬</span>
-                <div class="detail-content">
-                  <span class="detail-label">التقنيات المستعملة</span>
-                  <span class="detail-value">${data.techniques || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">💡</span>
-                <div class="detail-content">
-                  <span class="detail-label">التقنيات المبتكرة</span>
-                  <span class="detail-value">${data.innovation || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📅</span>
-                <div class="detail-content">
-                  <span class="detail-label">تاريخ الإضافة</span>
-                  <span class="detail-value">${data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : "-"}</span>
-                </div>
-              </div>
-            </div>
-            <div class="action-buttons">
-              <a href="javascript:history.back()" class="btn-back">← العودة</a>
-            </div>
-          `;
+            `;
+
         } else {
-          container.innerHTML = "<p class='error-message'>❌ المنتج غير موجود.</p>";
+            productNumberElement.textContent = "---";
+            container.innerHTML = "<p class='error-message'>❌ المنتج غير موجود.</p>";
         }
       } catch (error) {
         console.error("خطأ في جلب المنتج:", error);
-        container.innerHTML = "<p class='error-message'>⚠️ حدث خطأ أثناء تحميل المنتج.</p>";
+        productNumberElement.textContent = "خطأ";
+        container.innerHTML = "<p class='error-message'>⚠️ حدث خطأ أثناء تحميل البيانات أو الترتيب.</p>";
       }
     }
 
