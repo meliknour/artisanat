@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+      <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تفاصيل المنتج</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
+    /* ... (Your existing CSS styles remain the same) ... */
     :root {
       --primary-color: #8b5a2b;
       --secondary-color: #d4a574;
@@ -316,8 +317,211 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
       getFirestore, 
-      collection, // جديد: لجلب المجموعة
-      getDocs,    // جديد: لجلب وثائق متعددة
-      query,      // جديد: لإنشاء استعلام
-      orderBy    // جديد: للترتيب
-    } from "https://www.gstatic
+      collection, 
+      getDocs, 
+      query, 
+      orderBy // الأداة الرئيسية للترتيب الزمني
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ✅ جلب id من الرابط
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+
+    const container = document.getElementById("productDetails");
+    const productNumberElement = document.getElementById("productNumber");
+
+    // ✅ دالة لتنسيق رقم المنتج
+    function formatProductId(index) {
+      if (typeof index !== 'number' || index < 1) return "---";
+      // إضافة 1 إلى الفهرس لجعله يبدأ من 1 (001، 002، ...)
+      return String(index).padStart(3, '0');
+    }
+
+    async function loadProduct() {
+      if (!productId) {
+        productNumberElement.textContent = "---";
+        container.innerHTML = "<p class='error-message'>❌ لم يتم تمرير معرف المنتج.</p>";
+        return;
+      }
+
+      try {
+            // 💡 الخطوة 1: جلب كل المنتجات مرتبة حسب حقل 'timestamp' تصاعدياً
+           const productsCollection = collection(db, "products");
+            // هذا هو السطر الذي يضمن الترتيب حسب تاريخ الإدخال
+           const q = query(productsCollection, orderBy("timestamp", "asc")); 
+            const querySnapshot = await getDocs(q);
+
+            let productData = null;
+            let productIndex = -1;
+            
+            // 💡 الخطوة 2: البحث عن المنتج الحالي وتحديد فهرسه (ترتيبه)
+            querySnapshot.docs.forEach((doc, index) => {
+                if (doc.id === productId) {
+                    productData = doc.data();
+                    // تخزين الترتيب الفعلي (يبدأ من 1)
+                    productIndex = index + 1; 
+                }
+            });
+
+            if (productData) {
+                // 💡 الخطوة 3: عرض رقم المنتج والبيانات
+                productNumberElement.textContent = formatProductId(productIndex);
+
+                container.innerHTML = `
+                  <div class="product-header">
+                    <h2>${productData.name || "منتج بدون اسم"}</h2>
+                    <img src="${productData.image || ""}" alt="صورة المنتج" class="product-image">
+                  </div>
+                  <div class="product-details-grid">
+                    <div class="detail-item">
+                      <span class="detail-icon">🏷️</span>
+                      <div class="detail-content">
+                        <span class="detail-label">النوع</span>
+                        <span class="detail-value">${productData.type || "-"}</span>
+                      </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">💰</span>
+                      <div class="detail-content">
+                        <span class="detail-label">السعر</span>
+                        <span class="detail-value">${productData.price || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">⏱️</span>
+                      <div class="detail-content">
+                        <span class="detail-label">مدة الإنجاز</span>
+                        <span class="detail-value">${productData.duration || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">📏</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الحجم</span>
+                        <span class="detail-value">${productData.size || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">⚖️</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الوزن</span>
+                        <span class="detail-value">${productData.weight || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🔧</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الاستعمال</span>
+                        <span class="detail-value">${productData.usage || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🎨</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الألوان</span>
+                        <span class="detail-value">${productData.colors || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">✨</span>
+                      <div class="detail-content">
+                        <span class="detail-label">نوع التزيين والرموز</span>
+                        <span class="detail-value">${productData.decoration || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🏭</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الإنتاج</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">📍</span>
+                      <div class="detail-content">
+                        <span class="detail-label">المصدر</span>
+                        <span class="detail-value">${productData.source || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">👥</span>
+                      <div class="detail-content">
+                        <span class="detail-label">عدد المتدخلين</span>
+                        <span class="detail-value">${productData.people || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🧱</span>
+                      <div class="detail-content">
+                        <span class="detail-label">المواد الأولية</span>
+                        <span class="detail-value">${productData.materials || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">📋</span>
+                      <div class="detail-content">
+                        <span class="detail-label">مراحل الإنجاز</span>
+                        <span class="detail-value">${productData.steps || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🛠️</span>
+                      <div class="detail-content">
+                        <span class="detail-label">الأدوات المستعملة</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">🔬</span>
+                      <div class="detail-content">
+                        <span class="detail-label">التقنيات المستعملة</span>
+                        <span class="detail-value">${productData.techniques || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">💡</span>
+                      <div class="detail-content">
+                        <span class="detail-label">التقنيات المبتكرة</span>
+                        <span class="detail-value">${productData.innovation || "-"}</span>
+                    </div>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-icon">📅</span>
+                      <div class="detail-content">
+                        <span class="detail-label">تاريخ الإضافة</span>
+                        <span class="detail-value">${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString() : "-"}</span>
+                    </div>
+                    </div>
+                  </div>
+                  <div class="action-buttons">
+                    <a href="javascript:history.back()" class="btn-back">← العودة</a>
+                  </div>
+                `;
+
+            } else {
+                productNumberElement.textContent = "---";
+                container.innerHTML = "<p class='error-message'>❌ المنتج غير موجود.</p>";
+            }
+      } catch (error) {
+        console.error("خطأ في جلب المنتج:", error);
+        productNumberElement.textContent = "خطأ";
+        container.innerHTML = "<p class='error-message'>⚠️ حدث خطأ أثناء تحميل البيانات أو الترتيب.</p>";
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
