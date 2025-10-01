@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تفاصيل المنتج</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #8b5a2b;
+      --secondary-color: #d4a574;
+      --accent-color: #a87c4f;
+      --light-color: #f9f5f0;
+      --dark-color: #3a2c1e;
+      --text-color: #333;
+      --border-radius: 12px;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', Arial, sans-serif;
+      background: linear-gradient(135deg, #f9f5f0 0%, #e8dfd3 100%);
+      color: var(--text-color);
+      padding: 20px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 2.2rem;
+    }
+    .product-header { text-align: center; margin-bottom: 30px; }
+    .product-header h2 { color: var(--dark-color); margin-bottom: 15px; font-size: 1.8rem; }
+    .product-image {
+      max-width: 100%;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    .product-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .detail-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 15px;
+      background: var(--light-color);
+      border-radius: var(--border-radius);
+      border-right: 3px solid var(--secondary-color);
+    }
+    .detail-icon { font-size: 1.5rem; margin-left: 10px; }
+    .detail-content { display: flex; flex-direction: column; }
+    .detail-label { font-weight: 700; color: var(--primary-color); }
+    .detail-value { color: var(--dark-color); }
+
+    /* زر الطباعة */
+    .print-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 25px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .print-btn:hover { background: var(--accent-color); }
+
+    /* إعدادات الطباعة */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container {
+        box-shadow: none;
+        margin: 0;
+        width: 210mm;   /* A4 عرض */
+        min-height: 297mm; /* A4 طول */
+        padding: 20mm;
+        page-break-after: auto;
+      }
+      .print-btn { display: none; } /* إخفاء زر الطباعة عند الطباعة */
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+    const container = document.getElementById("productDetails");
+
+    async function loadProduct() {
+      if (!productId) {
+        container.innerHTML = "<p>❌ لم يتم تمرير معرف المنتج.</p>";
+        return;
+      }
+      try {
+        const docRef = doc(db, "products", productId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          container.innerHTML = `
+            <div class="product-header">
+              <h2>${data.name || "منتج بدون اسم"}</h2>
+              <img src="${data.image || ""}" alt="صورة المنتج" class="product-image">
+            </div>
+            <div class="product-details-grid">
+              <div class="detail-item"><span class="detail-icon">💰</span>
+                <div class="detail-content"><span class="detail-label">السعر</span><span class="detail-value">${data.price || "-"}</span></div>
+              </div>
+              <div class="detail-item"><span class="detail-icon">📏</span>
+                <div class="detail-content"><span class="detail-label">الحجم</span><span class="detail-value">${data.size || "-"}</span></div>
+              </div>
+              <div class="detail-item"><span class="detail-icon">📅</span>
+                <div class="detail-content"><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">${data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString() : "-"}</span></div>
+              </div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = "<p>❌ المنتج غير موجود.</p>";
+        }
+      } catch (error) {
+        console.error("خطأ:", error);
+        container.innerHTML = "<p>⚠️ خطأ في تحميل المنتج.</p>";
+      }
+    }
+    loadProduct();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 تفاصيل المنتج</h1>
+    <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </div>
+</body>
+</html>
