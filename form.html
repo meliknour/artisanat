@@ -30,6 +30,12 @@
     .loading { text-align: center; padding: 20px; }
     .success-message { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
     .error-message { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
+    /* أنماط خاصة للطباعة */
+    .print-only { display: none; }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block; }
+    }
   </style>
   
   <!-- Firebase SDK -->
@@ -141,6 +147,12 @@
 
 <div class="container" id="displayOutput">
   <h1>بطاقة تقنية للمنتوج</h1>
+  
+  <!-- صورة بديلة للطباعة -->
+  <div class="print-only" id="printImageContainer" style="text-align:center; display:none;">
+    <img id="printImage" style="max-width:100%; max-height:250px;">
+  </div>
+  
   <div style="text-align:center;">
     <img id="outputImage">
   </div>
@@ -151,6 +163,13 @@
     <h3>رمز QR للمنتج</h3>
     <div id="qrCode"></div>
     <div class="product-link" id="productLink"></div>
+  </div>
+  
+  <!-- QR Code بديل للطباعة -->
+  <div class="print-only" id="printQrContainer" style="text-align:center; display:none;">
+    <h3>رمز QR للمنتج</h3>
+    <div id="printQrCode"></div>
+    <div class="product-link" id="printProductLink"></div>
   </div>
   
   <button id="pdfButton" type="button" onclick="downloadPDF()">تحميل PDF</button>
@@ -183,16 +202,20 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentImageURL = "";
+let currentQRCodeURL = "";
 const inputForm = document.getElementById("inputForm");
 const displayOutput = document.getElementById("displayOutput");
 const loadingContainer = document.getElementById("loadingContainer");
 const previewImage = document.getElementById("previewImage");
 const outputImage = document.getElementById("outputImage");
+const printImage = document.getElementById("printImage");
 const outputTable = document.getElementById("outputTable");
 const productIdInput = document.getElementById("productId");
 const imageUrlInput = document.getElementById("imageUrl");
 const qrContainer = document.getElementById("qrCode");
+const printQrContainer = document.getElementById("printQrCode");
 const productLink = document.getElementById("productLink");
+const printProductLink = document.getElementById("printProductLink");
 const messageContainer = document.getElementById("messageContainer");
 
 // معالجة معرّف المنتج من الرابط
@@ -234,6 +257,31 @@ function loadImageFromUrl() {
   }
 }
 
+// تحويل الصورة إلى Base64 لحل مشكلة CORS
+function getBase64Image(img) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const imgElement = new Image();
+    
+    imgElement.crossOrigin = 'Anonymous';
+    imgElement.onload = function() {
+      canvas.width = imgElement.width;
+      canvas.height = imgElement.height;
+      ctx.drawImage(imgElement, 0, 0);
+      const dataURL = canvas.toDataURL('image/png');
+      resolve(dataURL);
+    };
+    
+    imgElement.onerror = function() {
+      // إذا فشل تحويل الصورة، نستخدم صورة بديلة
+      resolve(null);
+    };
+    
+    imgElement.src = img.src;
+  });
+}
+
 // قراءة تشيك بوكس
 function getCheckedValues(name) {
   return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
@@ -245,10 +293,12 @@ function getCheckedValues(name) {
 function generateQRCode(productUrl) {
   // مسح أي QR Code موجود مسبقاً
   qrContainer.innerHTML = "";
+  printQrContainer.innerHTML = "";
   productLink.innerHTML = `<a href="${productUrl}" target="_blank">${productUrl}</a>`;
+  printProductLink.innerHTML = productUrl;
   
-  // إنشاء QR Code جديد
-  new QRCode(qrContainer, {
+  // إنشاء QR Code جديد للعرض
+  const qrCode = new QRCode(qrContainer, {
     text: productUrl,
     width: 200,
     height: 200,
@@ -256,6 +306,14 @@ function generateQRCode(productUrl) {
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.H
   });
+  
+  // حفظ رابط QR Code للاستخدام في PDF
+  setTimeout(() => {
+    const qrCanvas = qrContainer.querySelector('canvas');
+    if (qrCanvas) {
+      currentQRCodeURL = qrCanvas.toDataURL('image/png');
+    }
+  }, 100);
 }
 
 // عرض رسالة
@@ -424,6 +482,7 @@ function displayProductData(productData) {
   if (productData.image) {
     outputImage.src = productData.image;
     outputImage.style.display = "block";
+    printImage.src = productData.image;
   } else {
     outputImage.style.display = "none";
   }
@@ -449,38 +508,136 @@ function editData() {
   inputForm.style.display = "block";
 }
 
-// تحميل PDF بدون الأزرار وQR Code
+// تحميل PDF مع إصلاح مشكلة الصور وQR Code
 async function downloadPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p", "pt", "a4");
-
-  const element = document.getElementById("displayOutput");
-
-  // إخفاء الأزرار وQR Code مؤقتاً
-  const pdfButton = document.getElementById("pdfButton");
-  const backButton = document.getElementById("backButton");
-  const qrSection = document.getElementById("qrContainer");
-  pdfButton.style.display = "none";
-  backButton.style.display = "none";
-  qrSection.style.display = "none";
-
-  const canvas = await html2canvas(element, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
-
-  const imgProps = doc.getImageProperties(imgData);
-  const pdfWidth = doc.internal.pageSize.getWidth();
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-  doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  const doc = new jsPDF("p", "mm", "a4");
   
-  // استخدام معرف المنتج في اسم الملف
-  const productId = document.getElementById("productId").value;
-  doc.save(`بطاقة-المنتوج-${productId}.pdf`);
+  try {
+    // إظهار شاشة التحميل
+    loadingContainer.style.display = "block";
+    displayOutput.style.display = "none";
+    
+    const productId = document.getElementById("productId").value;
+    const productName = document.getElementById("productName").value;
+    
+    // إضافة عنوان البطاقة
+    doc.setFontSize(20);
+    doc.setTextColor(0, 86, 179);
+    doc.text("بطاقة تقنية للمنتوج", 105, 20, { align: "center" });
+    
+    let yPosition = 40;
+    
+    // إضافة صورة المنتج إذا كانت متوفرة
+    if (currentImageURL) {
+      try {
+        const imgData = await loadImageForPDF(currentImageURL);
+        if (imgData) {
+          const imgWidth = 80;
+          const imgHeight = 60;
+          doc.addImage(imgData, 'JPEG', (210 - imgWidth) / 2, yPosition, imgWidth, imgHeight);
+          yPosition += imgHeight + 10;
+        }
+      } catch (error) {
+        console.error("Error loading product image for PDF:", error);
+      }
+    }
+    
+    // جمع بيانات الجدول
+    const productData = collectProductData();
+    const tableData = [
+      ["إسم المنتج", productData.name || "غير محدد"],
+      ["نوع المنتج", productData.type || "غير محدد"],
+      ["الاستعمالات", productData.uses || "غير محدد"],
+      ["الحجم", productData.size || "غير محدد"],
+      ["الوزن", productData.weight || "غير محدد"],
+      ["نوع التزيين والرموز", productData.decoration || "غير محدد"],
+      ["الإنتاج", productData.production || "غير محدد"],
+      ["مصدر المادة", productData.materialSource || "غير محدد"],
+      ["المواد الأولية", productData.rawMaterials || "غير محدد"],
+      ["مراحل الإنجاز", productData.stages || "غير محدد"],
+      ["الأدوات المستعملة", productData.tools || "غير محدد"],
+      ["عدد المتدخلين", productData.contributors || "غير محدد"],
+      ["الألوان", productData.colors || "غير محدد"],
+      ["مدة الإنجاز", productData.duration || "غير محدد"],
+      ["التقنيات المستعملة", productData.techniques || "غير محدد"],
+      ["التقنيات المبتكرة", productData.innovations || "غير محدد"],
+      ["السعر", productData.price || "غير محدد"]
+    ];
+    
+    // إضافة البيانات كجدول
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    tableData.forEach(([key, value], index) => {
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFillColor(233, 236, 239);
+      doc.rect(20, yPosition, 50, 8, 'F');
+      doc.setTextColor(0, 0, 0);
+      doc.text(key, 25, yPosition + 5);
+      
+      // تقسيم النص الطويل إلى أسطر متعددة
+      const lines = doc.splitTextToSize(value, 120);
+      doc.text(lines, 75, yPosition + 5);
+      
+      yPosition += Math.max(8, lines.length * 5) + 2;
+    });
+    
+    // إضافة QR Code في الأسفل إذا كان هناك مساحة
+    if (yPosition < 200 && currentQRCodeURL) {
+      try {
+        const qrWidth = 40;
+        const qrHeight = 40;
+        doc.addImage(currentQRCodeURL, 'PNG', (210 - qrWidth) / 2, yPosition + 10, qrWidth, qrHeight);
+        
+        doc.setFontSize(10);
+        doc.text("رمز QR للمنتج", 105, yPosition + 55, { align: "center" });
+        
+        const productUrl = `${window.location.origin}${window.location.pathname}?id=${productId}`;
+        const urlLines = doc.splitTextToSize(productUrl, 180);
+        doc.text(urlLines, 105, yPosition + 65, { align: "center" });
+      } catch (error) {
+        console.error("Error adding QR code to PDF:", error);
+      }
+    }
+    
+    // حفظ الملف
+    doc.save(`بطاقة-المنتوج-${productId}.pdf`);
+    
+    showMessage("تم تحميل PDF بنجاح!", "success");
+    
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    showMessage("حدث خطأ أثناء إنشاء PDF", "error");
+  } finally {
+    // إعادة إظهار النتيجة وإخفاء شاشة التحميل
+    loadingContainer.style.display = "none";
+    displayOutput.style.display = "block";
+  }
+}
 
-  // إرجاع العناصر للعرض
-  pdfButton.style.display = "block";
-  backButton.style.display = "block";
-  qrSection.style.display = "block";
+// دالة مساعدة لتحميل الصور لـ PDF
+function loadImageForPDF(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = function() {
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
 }
 </script>
 
