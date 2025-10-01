@@ -4,16 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>إضافة منتج جديد</title>
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
@@ -21,512 +15,191 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      font-family: Arial, sans-serif;
     }
-
     .container {
       background: white;
       border-radius: 20px;
+      padding: 30px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      width: 100%;
       max-width: 800px;
-      margin: 20px;
+      width: 100%;
     }
-
-    .header {
-      background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
-      color: white;
-      padding: 30px;
-      text-align: center;
-    }
-
-    .header h2 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-
-    .header p {
-      opacity: 0.9;
-      font-size: 16px;
-    }
-
-    .form-container {
-      padding: 30px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #333;
-      font-size: 15px;
-    }
-
+    h2 { text-align: center; margin-bottom: 20px; color: #0056b3; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
     input, select, textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e1e5e9;
-      border-radius: 10px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-      background: #f8f9fa;
+      width: 100%; padding: 10px; margin-bottom: 15px;
+      border: 1px solid #ccc; border-radius: 8px;
     }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #0056b3;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .submit-btn {
+    button {
+      width: 100%; padding: 15px;
       background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 18px;
-      border-radius: 10px;
+      border: none; border-radius: 10px;
+      color: white; font-size: 16px; font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      width: 100%;
-      margin-top: 10px;
-      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     }
-
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 7px 20px rgba(40, 167, 69, 0.4);
-    }
-
-    .submit-btn:active {
-      transform: translateY(0);
-    }
-
     .success-message {
-      background: #d4edda;
-      color: #155724;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 20px;
-      text-align: center;
-      display: none;
-      animation: fadeIn 0.5s ease;
+      display: none; text-align: center;
+      margin-top: 15px; padding: 10px;
+      background: #d4edda; color: #155724; border-radius: 8px;
     }
-
-    .image-preview {
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    .image-preview img {
-      max-width: 100%;
-      max-height: 200px;
-      border-radius: 10px;
-      border: 2px solid #e1e5e9;
-    }
-
-    .preview-label {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 5px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-section {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #eaeaea;
-    }
-
-    .form-section-title {
-      font-size: 20px;
-      color: #0056b3;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
-      font-weight: 600;
-    }
-
-    /* تحسينات للهواتف */
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .header {
-        padding: 20px;
-      }
-      
-      .header h2 {
-        font-size: 24px;
-      }
-      
-      .form-container {
-        padding: 20px;
-      }
-    }
-
-    /* تأثيرات إضافية */
-    .form-group {
-      position: relative;
-    }
-
-    .required::after {
-      content: " *";
-      color: #e74c3c;
-    }
-
-    .icon {
-      position: absolute;
-      left: 15px;
-      top: 42px;
-      color: #6c757d;
-    }
-
-    /* تحسينات للألوان */
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230056b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: left 15px center;
-      background-size: 16px;
-      padding-right: 15px;
-      padding-left: 40px;
-    }
-
-    .image-url-group {
-      position: relative;
-    }
-
-    .preview-btn {
-      position: absolute;
-      left: 10px;
-      top: 38px;
-      background: #0056b3;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .preview-btn:hover {
-      background: #003d82;
-    }
-
-    .image-url-input {
-      padding-left: 80px;
-    }
+    .image-preview { text-align: center; display: none; }
+    .image-preview img { max-height: 200px; border-radius: 10px; margin-top: 10px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h2>إضافة منتج جديد</h2>
-      <p>املأ النموذج أدناه لإضافة منتج جديد إلى قاعدة البيانات</p>
-    </div>
-    
-    <div class="form-container">
-      <form id="addForm">
-        <div class="form-section">
-          <h3 class="form-section-title">المعلومات الأساسية</h3>
-          
-          <div class="form-group full-width">
-            <label for="imageUrl" class="required">رابط صورة المنتج</label>
-            <div class="image-url-group">
-              <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" class="image-url-input" required>
-              <button type="button" class="preview-btn" onclick="previewImage()">معاينة</button>
-            </div>
-            <div class="image-preview" id="imagePreview">
-              <div class="preview-label">معاينة الصورة:</div>
-              <img id="previewImage" alt="معاينة صورة المنتج">
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="name" class="required">اسم المنتج</label>
-              <input type="text" id="name" value="لوحة فنية" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="type" class="required">نوع المنتج</label>
-              <select id="type" required>
-                <option>يدوي</option>
-                <option>يدوي بالآلة</option>
-                <option>آلي</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="price" class="required">السعر</label>
-              <input type="text" id="price" value="30.000 دج" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="duration" class="required">مدة الإنجاز</label>
-              <input type="text" id="duration" value="3 أشهر" required>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-section">
-          <h3 class="form-section-title">المواصفات الفنية</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="size">الحجم</label>
-              <input type="text" id="size" value="80 سم × 60 سم">
-            </div>
-            
-            <div class="form-group">
-              <label for="weight">الوزن</label>
-              <select id="weight">
-                <option>خفيف</option>
-                <option>متوسط</option>
-                <option>ثقيل</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="usage">الاستعمال</label>
-              <select id="usage">
-                <option>التزيين</option>
-                <option>الاستعمال اليومي</option>
-                <option>نفعي</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="colors">الألوان</label>
-              <input type="text" id="colors" value="أحمر - أزرق - أصفر">
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-section">
-          <h3 class="form-section-title">التصنيف والتصنيع</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="decoration">نوع التزيين والرموز</label>
-              <select id="decoration">
-                <option>بدون رموز</option>
-                <option>نقوش</option>
-                <option>رموز تقليدية</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="production">الإنتاج</label>
-              <select id="production">
-                <option>حرفي</option>
-                <option>مؤسسة</option>
-                <option>تعاونية</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="source">مصدر المادة</label>
-              <select id="source">
-                <option>محلية</option>
-                <option>مستوردة</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="people">عدد المتدخلين</label>
-              <input type="text" id="people" value="نجار فني">
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-section">
-          <h3 class="form-section-title">التفاصيل التقنية</h3>
-          <div class="form-group full-width">
-            <label for="materials">المواد الأولية</label>
-            <textarea id="materials">قماش، خشب أبيض، ألوان زيتية</textarea>
-          </div>
-          
-          <div class="form-group full-width">
-            <label for="steps">مراحل الإنجاز</label>
-            <textarea id="steps">بحث - تخطيط - تلوين</textarea>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="tools">الأدوات المستعملة</label>
-              <input type="text" id="tools" value="ريشة، سكين رسم">
-            </div>
-            
-            <div class="form-group">
-              <label for="techniques">التقنيات المستعملة</label>
-              <input type="text" id="techniques" value="الرسم التجريدي والتعبيري">
-            </div>
-          </div>
-          
-          <div class="form-group full-width">
-            <label for="innovation">التقنيات المبتكرة</label>
-              <input type="text" id="innovation" value="إدخال سعف النخيل">
-          </div>
-        </div>
-        
-        <button type="submit" class="submit-btn">
-          إضافة المنتج إلى قاعدة البيانات
-        </button>
-      </form>
-      
-      <div class="success-message" id="successMessage">
-        تمت إضافة المنتج بنجاح!
+    <h2>إضافة منتج جديد</h2>
+    <form id="addForm">
+      <label for="imageUrl">رابط صورة المنتج</label>
+      <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" required>
+      <div class="image-preview" id="imagePreview">
+        <img id="previewImage" alt="معاينة الصورة">
       </div>
-    </div>
+
+      <label for="name">اسم المنتج</label>
+      <input type="text" id="name" value="لوحة فنية" required>
+
+      <label for="type">نوع المنتج</label>
+      <select id="type">
+        <option>يدوي</option>
+        <option>يدوي بالآلة</option>
+        <option>آلي</option>
+      </select>
+
+      <label for="price">السعر</label>
+      <input type="text" id="price" value="30.000 دج">
+
+      <label for="duration">مدة الإنجاز</label>
+      <input type="text" id="duration" value="3 أشهر">
+
+      <label for="size">الحجم</label>
+      <input type="text" id="size" value="80 سم × 60 سم">
+
+      <label for="weight">الوزن</label>
+      <select id="weight">
+        <option>خفيف</option>
+        <option>متوسط</option>
+        <option>ثقيل</option>
+      </select>
+
+      <label for="usage">الاستعمال</label>
+      <select id="usage">
+        <option>التزيين</option>
+        <option>الاستعمال اليومي</option>
+        <option>نفعي</option>
+      </select>
+
+      <label for="colors">الألوان</label>
+      <input type="text" id="colors" value="أحمر - أزرق - أصفر">
+
+      <label for="decoration">نوع التزيين والرموز</label>
+      <select id="decoration">
+        <option>بدون رموز</option>
+        <option>نقوش</option>
+        <option>رموز تقليدية</option>
+      </select>
+
+      <label for="production">الإنتاج</label>
+      <select id="production">
+        <option>حرفي</option>
+        <option>مؤسسة</option>
+        <option>تعاونية</option>
+      </select>
+
+      <label for="source">مصدر المادة</label>
+      <select id="source">
+        <option>محلية</option>
+        <option>مستوردة</option>
+      </select>
+
+      <label for="people">عدد المتدخلين</label>
+      <input type="text" id="people" value="نجار فني">
+
+      <label for="materials">المواد الأولية</label>
+      <textarea id="materials">قماش، خشب أبيض، ألوان زيتية</textarea>
+
+      <label for="steps">مراحل الإنجاز</label>
+      <textarea id="steps">بحث - تخطيط - تلوين</textarea>
+
+      <label for="tools">الأدوات المستعملة</label>
+      <input type="text" id="tools" value="ريشة، سكين رسم">
+
+      <label for="techniques">التقنيات المستعملة</label>
+      <input type="text" id="techniques" value="الرسم التجريدي والتعبيري">
+
+      <label for="innovation">التقنيات المبتكرة</label>
+      <input type="text" id="innovation" value="إدخال سعف النخيل">
+
+      <button type="submit">إضافة المنتج إلى قاعدة البيانات</button>
+    </form>
+    <div class="success-message" id="successMessage">تمت إضافة المنتج بنجاح!</div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
       authDomain: "artisanat-161f3.firebaseapp.com",
       projectId: "artisanat-161f3",
-      storageBucket: "artisanat-161f3.firebasestorage.app",
+      storageBucket: "artisanat-161f3.appspot.com",
       messagingSenderId: "203989144161",
       appId: "1:203989144161:web:88273bf2b917ddc0a65020",
       measurementId: "G-9350J62Z5H"
     };
 
-    // تهيئة Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    // دالة معاينة الصورة
-    function previewImage() {
-      const imageUrl = document.getElementById('imageUrl').value;
-      const previewContainer = document.getElementById('imagePreview');
-      const previewImg = document.getElementById('previewImage');
-      
-      if (imageUrl) {
-        previewImg.src = imageUrl;
-        previewContainer.style.display = 'block';
-        
-        // التحقق من أن الصورة موجودة
-        previewImg.onload = function() {
-          console.log('تم تحميل الصورة بنجاح');
-        };
-        
-        previewImg.onerror = function() {
-          alert('رابط الصورة غير صالح أو الصورة غير موجودة');
-          previewContainer.style.display = 'none';
-        };
-      } else {
-        alert('يرجى إدخال رابط الصورة أولاً');
-      }
-    }
+    const form = document.getElementById("addForm");
+    const successMessage = document.getElementById("successMessage");
 
-    // معاينة الصورة تلقائياً عند تغيير الرابط
-    document.getElementById('imageUrl').addEventListener('blur', previewImage);
-
-    document.getElementById("addForm").addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // التحقق من رابط الصورة
-      const imageUrl = document.getElementById("imageUrl").value;
-      if (!imageUrl) {
-        alert('يرجى إدخال رابط صورة المنتج');
-        return;
-      }
-
-      // عرض رسالة التحميل
-      const submitBtn = document.querySelector('.submit-btn');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'جاري الإضافة...';
-      submitBtn.disabled = true;
+      const product = {
+        image: document.getElementById("imageUrl").value,
+        name: document.getElementById("name").value,
+        type: document.getElementById("type").value,
+        price: document.getElementById("price").value,
+        duration: document.getElementById("duration").value,
+        size: document.getElementById("size").value,
+        weight: document.getElementById("weight").value,
+        usage: document.getElementById("usage").value,
+        colors: document.getElementById("colors").value,
+        decoration: document.getElementById("decoration").value,
+        production: document.getElementById("production").value,
+        source: document.getElementById("source").value,
+        people: document.getElementById("people").value,
+        materials: document.getElementById("materials").value,
+        steps: document.getElementById("steps").value,
+        tools: document.getElementById("tools").value,
+        techniques: document.getElementById("techniques").value,
+        innovation: document.getElementById("innovation").value,
+        timestamp: new Date()
+      };
 
       try {
-        const product = {
-          image: imageUrl, // إضافة رابط الصورة
-          type: document.getElementById("type").value,
-          usage: document.getElementById("usage").value,
-          size: document.getElementById("size").value,
-          weight: document.getElementById("weight").value,
-          decoration: document.getElementById("decoration").value,
-          production: document.getElementById("production").value,
-          source: document.getElementById("source").value,
-          name: document.getElementById("name").value,
-          materials: document.getElementById("materials").value,
-          steps: document.getElementById("steps").value,
-          tools: document.getElementById("tools").value,
-          people: document.getElementById("people").value,
-          colors: document.getElementById("colors").value,
-          duration: document.getElementById("duration").value,
-          techniques: document.getElementById("techniques").value,
-          innovation: document.getElementById("innovation").value,
-          price: document.getElementById("price").value,
-          timestamp: new Date()
-        };
-
-        await db.collection("products").add(product);
-        
-        // عرض رسالة النجاح
-        const successMessage = document.getElementById("successMessage");
-        successMessage.style.display = 'block';
-        
-        // إعادة تعيين النموذج بعد ثانيتين
-        setTimeout(() => {
-          e.target.reset();
-          successMessage.style.display = 'none';
-          document.getElementById('imagePreview').style.display = 'none';
-        }, 2000);
-        
-      } catch (error) {
-        console.error("Error adding product: ", error);
-        alert("حدث خطأ أثناء إضافة المنتج. يرجى المحاولة مرة أخرى.");
-      } finally {
-        // إعادة حالة الزر
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        await addDoc(collection(db, "products"), product);
+        successMessage.style.display = "block";
+        form.reset();
+        setTimeout(() => successMessage.style.display = "none", 3000);
+      } catch (err) {
+        alert("خطأ: " + err.message);
       }
     });
 
-    // إضافة تأثيرات تفاعلية للحقول
-    document.querySelectorAll('input, select, textarea').forEach(element => {
-      element.addEventListener('focus', function() {
-        this.parentElement.classList.add('focused');
-      });
-      
-      element.addEventListener('blur', function() {
-        this.parentElement.classList.remove('focused');
-      });
+    // معاينة الصورة
+    document.getElementById("imageUrl").addEventListener("blur", () => {
+      const imageUrl = document.getElementById("imageUrl").value;
+      const preview = document.getElementById("previewImage");
+      const previewBox = document.getElementById("imagePreview");
+      if (imageUrl) {
+        preview.src = imageUrl;
+        previewBox.style.display = "block";
+      }
     });
   </script>
 </body>
