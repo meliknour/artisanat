@@ -74,11 +74,7 @@
           <td>${docSnap.id}</td>
           <td><a href="view.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
           <td><img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${viewUrl}" alt="QR Code"></td>
-          <td>
-            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
-            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
-            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
-          </td>
+
         `;
         tbody.appendChild(tr);
       });
