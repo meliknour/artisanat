@@ -2,25 +2,40 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>قائمة المنتجات</title>
+  <title>📋 قائمة المنتجات</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; }
-    table { width: 100%; border-collapse: collapse; margin: 20px auto; background: #fff; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-    th { background: #3a3b57; color: #fff; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    button { padding: 5px 10px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; }
-    .edit { background: #ffc107; color: #000; }
-    .delete { background: #dc3545; color: #fff; }
-    .view { background: #28a745; color: #fff; }
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+    table { width:100%; border-collapse:collapse; background:#fff; }
+    th, td { border:1px solid #ddd; padding:10px; text-align:center; }
+    th { background:#3a3b57; color:#fff; }
+    tr:hover { background:#f1f1f1; }
+    .loading { text-align:center; font-size:18px; }
+    a, button { margin:3px; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; }
+    .btn-edit { background:#4CAF50; color:#fff; }
+    .btn-delete { background:#E53935; color:#fff; }
+    .btn-view { background:#3a3b57; color:#fff; }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@latest/build/qrcode.min.js";
+</head>
+<body>
+  <h2>📋 قائمة المنتجات</h2>
+  <div id="loading" class="loading">⏳ جارٍ تحميل البيانات...</div>
+  <table id="productsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>اسم المنتج</th>
+        <th>المعرف (ID)</th>
+        <th>الرابط</th>
+        <th>الإجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="productsList"></tbody>
+  </table>
 
-    // ✅ إعداد Firebase
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
       authDomain: "artisanat-161f3.firebaseapp.com",
@@ -34,80 +49,50 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ✅ تحميل كل المنتجات
+    const table = document.getElementById("productsTable");
+    const list = document.getElementById("productsList");
+    const loading = document.getElementById("loading");
+
     async function loadProducts() {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      let tbody = document.getElementById("productsTable");
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        loading.style.display = "none";
+        table.style.display = "table";
 
-      querySnapshot.forEach(async (docSnap) => {
-        let data = docSnap.data();
-        let id = docSnap.id;
-        let url = `${window.location.origin}/view.html?id=${id}`;
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const row = document.createElement("tr");
 
-        let row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${data.name || "-"}</td>
+            <td>${data.id}</td>
+            <td><a href="edit.html?id=${data.id}" target="_blank">🔗 الرابط</a></td>
+            <td>
+              <a class="btn-view" href="view.html?id=${data.id}" target="_blank">👁 عرض</a>
+              <a class="btn-edit" href="edit.html?id=${data.id}" target="_blank">✏ تعديل</a>
+              <button class="btn-delete" data-id="${data.id}">🗑 حذف</button>
+            </td>
+          `;
+          list.appendChild(row);
+        });
 
-        // اسم المنتج
-        let nameCell = document.createElement("td");
-        nameCell.textContent = data["إسم المنتج"] || "بدون اسم";
-        row.appendChild(nameCell);
+        // تفعيل الحذف
+        document.querySelectorAll(".btn-delete").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (confirm("هل أنت متأكد من الحذف؟")) {
+              await deleteDoc(doc(db, "products", id));
+              location.reload();
+            }
+          });
+        });
 
-        // ID
-        let idCell = document.createElement("td");
-        idCell.textContent = id;
-        row.appendChild(idCell);
-
-        // رابط
-        let linkCell = document.createElement("td");
-        linkCell.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
-        row.appendChild(linkCell);
-
-        // QR Code
-        let qrCell = document.createElement("td");
-        let qrCanvas = document.createElement("canvas");
-        QRCode.toCanvas(qrCanvas, url, { width: 80 });
-        qrCell.appendChild(qrCanvas);
-        row.appendChild(qrCell);
-
-        // أزرار التحكم
-        let actionCell = document.createElement("td");
-        actionCell.innerHTML = `
-          <a href="edit.html?id=${id}"><button class="edit">✏️ تعديل</button></a>
-          <button class="delete" onclick="deleteProduct('${id}')">🗑️ حذف</button>
-          <a href="view.html?id=${id}"><button class="view">👁️ عرض</button></a>
-        `;
-        row.appendChild(actionCell);
-
-        tbody.appendChild(row);
-      });
+      } catch (err) {
+        loading.innerText = "❌ فشل تحميل البيانات: " + err.message;
+      }
     }
 
-    // ✅ حذف منتج
-    window.deleteProduct = async function(id) {
-      if (confirm("هل أنت متأكد من الحذف؟")) {
-        await deleteDoc(doc(db, "products", id));
-        alert("تم حذف المنتج ✅");
-        location.reload();
-      }
-    };
-
-    window.onload = loadProducts;
+    loadProducts();
   </script>
-</head>
-<body>
-  <h1 style="text-align:center;">📦 قائمة المنتجات</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>اسم المنتج</th>
-        <th>المعرف (ID)</th>
-        <th>الرابط</th>
-        <th>رمز QR</th>
-        <th>إجراءات</th>
-      </tr>
-    </thead>
-    <tbody id="productsTable">
-      <tr><td colspan="5">⏳ جارٍ تحميل البيانات...</td></tr>
-    </tbody>
-  </table>
 </body>
 </html>
