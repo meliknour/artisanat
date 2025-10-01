@@ -1,114 +1,9 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>إدخال منتج جديد</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
-    .container { max-width:900px; margin:auto; background:#fff; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-    h1 { text-align:center; color:#0056b3; border-bottom:3px solid #0056b3; padding-bottom:10px; }
-    label { font-weight:bold; margin-top:12px; display:block; }
-    input[type="text"], textarea { width:100%; padding:8px; margin-top:5px; border:1px solid #bbb; border-radius:5px; }
-    textarea { resize:vertical; min-height:70px; }
-    .options { margin:8px 0; }
-    .options label { font-weight:normal; margin-left:15px; }
-    button { margin-top:20px; padding:12px; border:none; border-radius:6px; cursor:pointer; }
-    #saveButton { background:#28a745; color:#fff; display:block; width:50%; margin:20px auto 0; }
-    #qrcode { text-align:center; margin-top:20px; }
-  </style>
-</head>
-<body>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import QRCode from "https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js";
 
-<div class="container">
-  <h1>إدخال منتج جديد</h1>
-
-  <label>إسم المنتج:</label>
-  <input type="text" id="productName" value="لوحة فنية">
-
-  <label>رابط صورة المنتج (URL):</label>
-  <input type="text" id="productImageUrl" value="https://via.placeholder.com/300">
-
-  <label>نوع المنتج:</label>
-  <div class="options">
-    <label><input type="checkbox" name="productType" value="يدوي"> يدوي</label>
-    <label><input type="checkbox" name="productType" value="يدوي بالآلة"> يدوي بالآلة</label>
-    <label><input type="checkbox" name="productType" value="آلي"> آلي</label>
-  </div>
-
-  <label>الاستعمالات:</label>
-  <div class="options">
-    <label><input type="checkbox" name="uses" value="التزيين"> التزيين</label>
-    <label><input type="checkbox" name="uses" value="الاستعمال اليومي"> الاستعمال اليومي</label>
-    <label><input type="checkbox" name="uses" value="نفعي"> نفعي</label>
-  </div>
-
-  <label>الحجم:</label>
-  <input type="text" id="size" value="80 سم × 60 سم">
-
-  <label>الوزن:</label>
-  <div class="options">
-    <label><input type="checkbox" name="weight" value="خفيف"> خفيف</label>
-    <label><input type="checkbox" name="weight" value="متوسط"> متوسط</label>
-    <label><input type="checkbox" name="weight" value="ثقيل"> ثقيل</label>
-  </div>
-
-  <label>نوع التزيين والرموز:</label>
-  <div class="options">
-    <label><input type="checkbox" name="decoration" value="بدون رموز"> بدون رموز</label>
-    <label><input type="checkbox" name="decoration" value="نقوش"> نقوش</label>
-    <label><input type="checkbox" name="decoration" value="رموز تقليدية"> رموز تقليدية</label>
-  </div>
-
-  <label>الإنتاج:</label>
-  <div class="options">
-    <label><input type="checkbox" name="production" value="حرفي"> حرفي</label>
-    <label><input type="checkbox" name="production" value="مؤسسة"> مؤسسة</label>
-    <label><input type="checkbox" name="production" value="تعاونية"> تعاونية</label>
-  </div>
-
-  <label>مصدر المادة:</label>
-  <div class="options">
-    <label><input type="checkbox" name="materialSource" value="محلية"> محلية</label>
-    <label><input type="checkbox" name="materialSource" value="مستوردة"> مستوردة</label>
-  </div>
-
-  <label>المواد الأولية:</label>
-  <textarea id="rawMaterials">قماش، خشب أبيض، ألوان زيتية</textarea>
-
-  <label>مراحل الإنجاز:</label>
-  <textarea id="stages">بحث - تخطيط - تلوين</textarea>
-
-  <label>الأدوات المستعملة:</label>
-  <input type="text" id="tools" value="ريشة، سكين رسم">
-
-  <label>عدد المتدخلين:</label>
-  <input type="text" id="contributors" value="نجار فني">
-
-  <label>الألوان:</label>
-  <textarea id="colors">أحمر - أزرق - أصفر</textarea>
-
-  <label>مدة الإنجاز:</label>
-  <input type="text" id="duration" value="3 أشهر">
-
-  <label>التقنيات المستعملة:</label>
-  <textarea id="techniques">الرسم التجريدي والتعبيري</textarea>
-
-  <label>التقنيات المبتكرة:</label>
-  <textarea id="innovations">إدخال سعف النخيل</textarea>
-
-  <label>السعر:</label>
-  <input type="text" id="price" value="30.000 دج">
-
-  <button id="saveButton" onclick="saveProduct()">حفظ المنتج</button>
-  <div id="qrcode"></div>
-</div>
-
-<!-- Firebase + QR -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
+  // إعداد Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
     authDomain: "artisanat-161f3.firebaseapp.com",
@@ -118,15 +13,16 @@
     appId: "1:203989144161:web:88273bf2b917ddc0a65020",
     measurementId: "G-9350J62Z5H"
   };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
   function getCheckedValues(name) {
     return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
                 .map(cb => cb.value).join(" - ");
   }
 
-  async function saveProduct() {
+  document.getElementById("saveButton").addEventListener("click", async () => {
     const data = {
       productName: document.getElementById("productName").value,
       productImageUrl: document.getElementById("productImageUrl").value,
@@ -146,22 +42,25 @@
       techniques: document.getElementById("techniques").value,
       innovations: document.getElementById("innovations").value,
       price: document.getElementById("price").value,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     };
 
-    const docRef = await db.collection("products").add(data);
-    const id = docRef.id;
-    const url = `https://meliknour.github.io/artisanat/index.html?id=${id}`;
+    try {
+      const docRef = await addDoc(collection(db, "products"), data);
+      const id = docRef.id;
+      const url = `https://meliknour.github.io/artisanat/index.html?id=${id}`;
 
-    document.getElementById("qrcode").innerHTML = "";
-    new QRCode(document.getElementById("qrcode"), {
-      text: url,
-      width: 128,
-      height: 128
-    });
+      document.getElementById("qrcode").innerHTML = "";
+      new QRCode(document.getElementById("qrcode"), {
+        text: url,
+        width: 128,
+        height: 128
+      });
 
-    alert("✅ تم حفظ المنتج! QR جاهز للرابط: " + url);
-  }
+      alert("✅ تم حفظ المنتج! افتح الرابط: " + url);
+    } catch (e) {
+      console.error("❌ خطأ:", e);
+      alert("حدث خطأ، راجع الكونسول");
+    }
+  });
 </script>
-</body>
-</html>
