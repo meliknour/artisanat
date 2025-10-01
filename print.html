@@ -2,201 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تفاصيل المنتج</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // ✅ Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
-      authDomain: "artisanat-161f3.firebaseapp.com",
-      projectId: "artisanat-161f3",
-      storageBucket: "artisanat-161f3.appspot.com",
-      messagingSenderId: "203989144161",
-      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
-      measurementId: "G-9350J62Z5H"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // ✅ جلب id من الرابط
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get("id");
-
-    // دالة لتنسيق الرقم: تحويل "1" إلى "001"
-    function formatProductId(id) {
-        if (!id) return "---";
-        const num = parseInt(id);
-        if (isNaN(num)) return id;
-        return String(num).padStart(3, '0');
-    }
-
-    const container = document.getElementById("productDetails");
-    const titleElement = document.getElementById("mainTitle");
-    
-    // 💡 تحديث العنوان برقم المنتج المنسق
-    const formattedId = formatProductId(productId);
-    if (titleElement) {
-        titleElement.innerHTML = `📝 تفاصيل المنتج <span class="product-id-display">#${formattedId}</span>`;
-    }
-
-    async function loadProduct() {
-      if (!productId) {
-        container.innerHTML = "<p>❌ لم يتم تمرير معرف المنتج.</p>";
-        return;
-      }
-
-      try {
-        const docRef = doc(db, "products", productId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-
-          container.innerHTML = `
-            <div class="product-header">
-              <h2>${data.name || "منتج بدون اسم"}</h2>
-              <img src="${data.image || ""}" alt="صورة المنتج" class="product-image">
-            </div>
-            <div class="product-details-grid">
-              <div class="detail-item">
-                <span class="detail-icon">🏷️</span>
-                <div class="detail-content">
-                  <span class="detail-label">النوع</span>
-                  <span class="detail-value">${data.type || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">💰</span>
-                <div class="detail-content">
-                  <span class="detail-label">السعر</span>
-                  <span class="detail-value">${data.price || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">⏱️</span>
-                <div class="detail-content">
-                  <span class="detail-label">مدة الإنجاز</span>
-                  <span class="detail-value">${data.duration || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📏</span>
-                <div class="detail-content">
-                  <span class="detail-label">الحجم</span>
-                  <span class="detail-value">${data.size || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">⚖️</span>
-                <div class="detail-content">
-                  <span class="detail-label">الوزن</span>
-                  <span class="detail-value">${data.weight || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🔧</span>
-                <div class="detail-content">
-                  <span class="detail-label">الاستعمال</span>
-                  <span class="detail-value">${data.usage || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🎨</span>
-                <div class="detail-content">
-                  <span class="detail-label">الألوان</span>
-                  <span class="detail-value">${data.colors || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">✨</span>
-                <div class="detail-content">
-                  <span class="detail-label">نوع التزيين والرموز</span>
-                  <span class="detail-value">${data.decoration || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🏭</span>
-                <div class="detail-content">
-                  <span class="detail-label">الإنتاج</span>
-                  <span class="detail-value">${data.production || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📍</span>
-                <div class="detail-content">
-                  <span class="detail-label">المصدر</span>
-                  <span class="detail-value">${data.source || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">👥</span>
-                <div class="detail-content">
-                  <span class="detail-label">عدد المتدخلين</span>
-                  <span class="detail-value">${data.people || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🧱</span>
-                <div class="detail-content">
-                  <span class="detail-label">المواد الأولية</span>
-                  <span class="detail-value">${data.materials || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📋</span>
-                <div class="detail-content">
-                  <span class="detail-label">مراحل الإنجاز</span>
-                  <span class="detail-value">${data.steps || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🛠️</span>
-                <div class="detail-content">
-                  <span class="detail-label">الأدوات المستعملة</span>
-                  <span class="detail-value">${data.tools || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">🔬</span>
-                <div class="detail-content">
-                  <span class="detail-label">التقنيات المستعملة</span>
-                  <span class="detail-value">${data.techniques || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">💡</span>
-                <div class="detail-content">
-                  <span class="detail-label">التقنيات المبتكرة</span>
-                  <span class="detail-value">${data.innovation || "-"}</span>
-                </div>
-              </div>
-              <div class="detail-item">
-                <span class="detail-icon">📅</span>
-                <div class="detail-content">
-                  <span class="detail-label">تاريخ الإضافة</span>
-                  <span class="detail-value">${data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : "-"}</span>
-                </div>
-              </div>
-            </div>
-
-          `;
-        } else {
-          container.innerHTML = "<p class='error-message'>❌ المنتج غير موجود.</p>";
-        }
-      } catch (error) {
-        console.error("خطأ في جلب المنتج:", error);
-        container.innerHTML = "<p class='error-message'>⚠️ حدث خطأ أثناء تحميل المنتج.</p>";
-      }
-    }
-
-    loadProduct();
-  </script>
   <style>
     :root {
       --primary-color: #8b5a2b;
@@ -246,10 +56,15 @@
       background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
     }
 
-    h1 {
+    .page-header {
       text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    h1 {
       color: var(--primary-color);
-      margin-bottom: 25px;
+      margin-bottom: 10px;
       font-weight: 700;
       font-size: 2.2rem;
       position: relative;
@@ -267,19 +82,18 @@
       background: var(--secondary-color);
       border-radius: 3px;
     }
-    
-    /* نمط لرقم المنتج في العنوان */
-    .product-id-display {
-        color: var(--accent-color);
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-right: 10px;
-        background-color: var(--light-color);
-        padding: 4px 8px;
-        border-radius: 6px;
-        display: inline-block;
-        vertical-align: middle; /* لتحسين المحاذاة */
-    }
+
+    .product-id {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      box-shadow: 0 3px 10px rgba(139, 90, 43, 0.3);
+      margin-top: 10px;
+    }
 
     .product-header {
       text-align: center;
@@ -294,12 +108,10 @@
       font-size: 1.8rem;
     }
 
-    /* 💡 تثبيت حجم الصورة 200x200 على الشاشة */
     .product-image {
-      width: 200px; 
+      width: 200px;
       height: 200px;
-      object-fit: cover; /* الأهم: يثبت الحجم ويقص الزوائد */
-      max-width: 100%;
+      object-fit: cover;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       transition: var(--transition);
@@ -307,7 +119,7 @@
     }
 
     .product-image:hover {
-      transform: scale(1.02);
+      transform: scale(1.05);
     }
 
     .product-details-grid {
@@ -406,6 +218,11 @@
       h1 {
         font-size: 1.8rem;
       }
+      
+      .product-image {
+        width: 150px;
+        height: 150px;
+      }
     }
 
     /* تأثيرات التحميل */
@@ -414,7 +231,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .product-header, .detail-item, .action-buttons {
+    .page-header, .product-header, .detail-item, .action-buttons {
       animation: fadeIn 0.5s ease forwards;
     }
 
@@ -425,89 +242,82 @@
     .detail-item:nth-child(even) {
       animation-delay: 0.2s;
     }
-    
-    
-    /* ======================================= */
-    /* 💡 تنسيقات خاصة بالطباعة فقط (@media print) */
-    /* ======================================= */
 
+    /* تنسيقات الطباعة */
     @media print {
-        /* إزالة الخلفيات والألوان لتقليل استهلاك الحبر */
       body {
-        background: #fff !important; /* خلفية بيضاء للطباعة */
+        background: white !important;
         padding: 0;
-        font-size: 10pt; /* تصغير الخط قليلاً */
+        font-size: 12pt;
       }
-
+      
       .container {
-        box-shadow: none !important; /* إزالة الظل */
-        border: none !important;
+        box-shadow: none;
+        padding: 10px;
         margin: 0;
-        padding: 0 10px; /* حشوة خفيفة */
+        max-width: 100%;
       }
       
       .container::before {
-          content: none !important; /* إزالة الشريط الملون */
+        display: none;
       }
-
-        /* تعديل شكل العنوان ليناسب الطباعة */
-        h1 {
-            color: #333 !important;
-            font-size: 1.5rem !important;
-            padding-bottom: 10px;
-        }
-        
-        h1::after {
-            background: #ccc !important;
-            width: 80px !important;
-        }
-
-        /* تصغير رقم المنتج في الطباعة */
-        .product-id-display {
-            font-size: 1rem;
-            color: #555;
-            background: none;
-            border: 1px solid #ccc;
-        }
-        
-        /* تثبيت حجم الصورة وتصغيرها قليلاً للطباعة */
+      
       .product-image {
-        width: 150px; 
+        width: 150px;
         height: 150px;
-        box-shadow: none !important;
-        border: 1px solid #eee;
+        box-shadow: none;
       }
-
-      /* ضبط شبكة التفاصيل للطباعة (عرضها بعمودين) */
+      
       .product-details-grid {
-        grid-template-columns: 1fr 1fr; 
+        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
-
+      
       .detail-item {
         padding: 8px;
-        background: #f9f9f9; /* خلفية خفيفة جداً */
-        border-radius: 5px;
-        border-right: 3px solid #ccc; /* إطار خفيف */
+        page-break-inside: avoid;
       }
-      
-      .detail-label {
-          color: #555;
-      }
-      
-      /* إخفاء الأزرار وأي عناصر تفاعلية */
-      .action-buttons, .product-image:hover, .detail-item:hover, .btn-back {
-          display: none !important;
-          transform: none !important;
-          box-shadow: none !important;
+      
+      .detail-icon {
+        font-size: 1.2rem;
+      }
+      
+      .btn-back {
+        display: none;
+      }
+      
+      h1 {
+        font-size: 18pt;
+        margin-bottom: 15px;
+      }
+      
+      .product-header h2 {
+        font-size: 16pt;
+      }
+      
+      .product-id {
+        background: #f0f0f0;
+        color: #333;
+        box-shadow: none;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 id="mainTitle">📝 تفاصيل المنتج</h1>
+    <div class="page-header">
+      <h1>📝 تفاصيل المنتج</h1>
+      <div class="product-id">رقم المنتج: <span id="productNumber">⏳ جاري التحميل...</span></div>
+    </div>
     <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
   </div>
-</body>
-</html>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, // جديد: لجلب المجموعة
+      getDocs,    // جديد: لجلب وثائق متعددة
+      query,      // جديد: لإنشاء استعلام
+      orderBy    // جديد: للترتيب
+    } from "https://www.gstatic
