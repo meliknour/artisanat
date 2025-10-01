@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إدخال منتج جديد</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <h1>تسجيل منتج جديد</h1>
+  <label>اسم المنتج:</label>
+  <input type="text" id="productName"><br><br>
+
+  <label>رابط صورة المنتج (URL):</label>
+  <input type="text" id="productImageUrl"><br><br>
+
+  <label>الوصف:</label>
+  <textarea id="description"></textarea><br><br>
+
+  <button onclick="saveProduct()">حفظ المنتج</button>
+
+  <div id="qrcode" style="margin-top:20px;"></div>
+
+<script>
+  // 🔹 إعداد Firebase
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  async function saveProduct() {
+    const name = document.getElementById("productName").value;
+    const image = document.getElementById("productImageUrl").value;
+    const desc = document.getElementById("description").value;
+
+    const docRef = await db.collection("products").add({
+      name: name,
+      image: image,
+      description: desc,
+      createdAt: new Date()
+    });
+
+    const id = docRef.id;
+    const url = `https://meliknour.github.io/artisanat/index.html?id=${id}`;
+
+    // توليد QR للرابط
+    document.getElementById("qrcode").innerHTML = "";
+    new QRCode(document.getElementById("qrcode"), {
+      text: url,
+      width: 128,
+      height: 128
+    });
+
+    alert("تم حفظ المنتج! QR جاهز");
+  }
+</script>
+</body>
+</html>
