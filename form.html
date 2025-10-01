@@ -27,7 +27,14 @@
     #qrCode { max-width:200px; margin:0 auto; }
     .hidden { display: none; }
     .product-link { text-align: center; margin: 15px 0; font-weight: bold; }
+    .loading { text-align: center; padding: 20px; }
+    .success-message { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
+    .error-message { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
   </style>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -35,7 +42,7 @@
   <h1>نموذج بطاقة تقنية للمنتوج</h1>
 
   <!-- حقل معرف المنتج مخفي -->
-  <input type="text" id="productId" class="hidden" value="001">
+  <input type="text" id="productId" class="hidden">
 
   <!-- رابط الصورة -->
   <div id="imageContainer">
@@ -127,7 +134,9 @@
   <label>السعر:</label>
   <input type="text" id="price" value="30.000 دج">
 
-  <button id="showButton" type="button" onclick="displayData()">إظهار البطاقة</button>
+  <div id="messageContainer"></div>
+
+  <button id="showButton" type="button" onclick="saveProductData()">حفظ وعرض البطاقة</button>
 </div>
 
 <div class="container" id="displayOutput">
@@ -148,15 +157,35 @@
   <button id="backButton" type="button" onclick="editData()">تعديل البيانات</button>
 </div>
 
+<div class="container loading hidden" id="loadingContainer">
+  <h2>جاري حفظ البيانات...</h2>
+</div>
+
 <!-- مكتبات -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+// تهيئة Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+  authDomain: "artisanat-161f3.firebaseapp.com",
+  projectId: "artisanat-161f3",
+  storageBucket: "artisanat-161f3.firebasestorage.app",
+  messagingSenderId: "203989144161",
+  appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+  measurementId: "G-9350J62Z5H"
+};
+
+// تهيئة Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 let currentImageURL = "";
 const inputForm = document.getElementById("inputForm");
 const displayOutput = document.getElementById("displayOutput");
+const loadingContainer = document.getElementById("loadingContainer");
 const previewImage = document.getElementById("previewImage");
 const outputImage = document.getElementById("outputImage");
 const outputTable = document.getElementById("outputTable");
@@ -164,11 +193,12 @@ const productIdInput = document.getElementById("productId");
 const imageUrlInput = document.getElementById("imageUrl");
 const qrContainer = document.getElementById("qrCode");
 const productLink = document.getElementById("productLink");
+const messageContainer = document.getElementById("messageContainer");
 
 // معالجة معرّف المنتج من الرابط
 function getProductIdFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('id') || generateProductId();
+  return urlParams.get('id');
 }
 
 // توليد معرف منتج عشوائي
@@ -179,11 +209,14 @@ function generateProductId() {
 // تحديث معرّف المنتج عند تحميل الصفحة
 window.onload = function() {
   const productId = getProductIdFromURL();
-  productIdInput.value = productId;
   
-  // إذا كان هناك معرف في الرابط، تحميل البيانات
-  if (urlParams.has('id')) {
-    loadProductData();
+  if (productId) {
+    // إذا كان هناك معرف في الرابط، تحميل البيانات من Firebase
+    productIdInput.value = productId;
+    loadProductFromFirebase(productId);
+  } else {
+    // إذا لم يكن هناك معرف، إنشاء معرف جديد
+    productIdInput.value = generateProductId();
   }
 };
 
@@ -195,7 +228,7 @@ function loadImageFromUrl() {
     previewImage.src = currentImageURL;
     previewImage.style.display = "block";
   } else {
-    alert("يرجى إدخال رابط الصورة");
+    showMessage("يرجى إدخال رابط الصورة", "error");
   }
 }
 
@@ -223,52 +256,17 @@ function generateQRCode(productUrl) {
   });
 }
 
-// عرض البطاقة
-function displayData() {
-  const data = {
-    "معرف المنتج": productIdInput.value,
-    "إسم المنتج": document.getElementById("productName").value,
-    "نوع المنتج": getCheckedValues("productType"),
-    "الاستعمالات": getCheckedValues("uses"),
-    "الحجم": document.getElementById("size").value,
-    "الوزن": getCheckedValues("weight"),
-    "نوع التزيين والرموز": getCheckedValues("decoration"),
-    "الإنتاج": getCheckedValues("production"),
-    "مصدر المادة": getCheckedValues("materialSource"),
-    "المواد الأولية": document.getElementById("rawMaterials").value,
-    "مراحل الإنجاز": document.getElementById("stages").value,
-    "الأدوات المستعملة": document.getElementById("tools").value,
-    "عدد المتدخلين": document.getElementById("contributors").value,
-    "الألوان": document.getElementById("colors").value,
-    "مدة الإنجاز": document.getElementById("duration").value,
-    "التقنيات المستعملة": document.getElementById("techniques").value,
-    "التقنيات المبتكرة": document.getElementById("innovations").value,
-    "السعر": document.getElementById("price").value
-  };
-
-  if (currentImageURL) outputImage.src = currentImageURL;
-  else outputImage.removeAttribute("src");
-
-  let tableHTML = "";
-  for (const key in data) {
-    tableHTML += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
-  }
-  outputTable.innerHTML = tableHTML;
-
-  // إنشاء رابط المنتج وQR Code
-  const productUrl = `${window.location.origin}${window.location.pathname}?id=${productIdInput.value}`;
-  generateQRCode(productUrl);
-
-  inputForm.style.display = "none";
-  displayOutput.style.display = "block";
-  
-  // حفظ البيانات في localStorage
-  saveProductData();
+// عرض رسالة
+function showMessage(message, type = "success") {
+  messageContainer.innerHTML = `<div class="${type}-message">${message}</div>`;
+  setTimeout(() => {
+    messageContainer.innerHTML = "";
+  }, 5000);
 }
 
-// حفظ بيانات المنتج
-function saveProductData() {
-  const productData = {
+// جمع بيانات المنتج
+function collectProductData() {
+  return {
     id: productIdInput.value,
     name: document.getElementById("productName").value,
     image: currentImageURL,
@@ -287,51 +285,99 @@ function saveProductData() {
     duration: document.getElementById("duration").value,
     techniques: document.getElementById("techniques").value,
     innovations: document.getElementById("innovations").value,
-    price: document.getElementById("price").value
+    price: document.getElementById("price").value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
-  
-  localStorage.setItem(`product_${productIdInput.value}`, JSON.stringify(productData));
 }
 
-// تحميل بيانات المنتج
-function loadProductData() {
-  const productId = getProductIdFromURL();
-  const savedData = localStorage.getItem(`product_${productId}`);
+// حفظ البيانات في Firebase
+async function saveProductData() {
+  const productData = collectProductData();
   
-  if (savedData) {
-    const productData = JSON.parse(savedData);
+  // التحقق من البيانات المطلوبة
+  if (!productData.name || !productData.image) {
+    showMessage("يرجى ملء جميع الحقول المطلوبة (اسم المنتج وصورة المنتج)", "error");
+    return;
+  }
+  
+  try {
+    // إظهار شاشة التحميل
+    inputForm.style.display = "none";
+    loadingContainer.style.display = "block";
     
-    // تعبئة النموذج بالبيانات المحفوظة
-    document.getElementById("productName").value = productData.name || "";
-    document.getElementById("size").value = productData.size || "";
-    document.getElementById("rawMaterials").value = productData.rawMaterials || "";
-    document.getElementById("stages").value = productData.stages || "";
-    document.getElementById("tools").value = productData.tools || "";
-    document.getElementById("contributors").value = productData.contributors || "";
-    document.getElementById("colors").value = productData.colors || "";
-    document.getElementById("duration").value = productData.duration || "";
-    document.getElementById("techniques").value = productData.techniques || "";
-    document.getElementById("innovations").value = productData.innovations || "";
-    document.getElementById("price").value = productData.price || "";
+    // حفظ البيانات في Firebase
+    await db.collection("products").doc(productData.id).set(productData);
     
-    // تعبئة الحقول الاختيارية
-    fillCheckboxes("productType", productData.type);
-    fillCheckboxes("uses", productData.uses);
-    fillCheckboxes("weight", productData.weight);
-    fillCheckboxes("decoration", productData.decoration);
-    fillCheckboxes("production", productData.production);
-    fillCheckboxes("materialSource", productData.materialSource);
+    showMessage("تم حفظ البيانات بنجاح!", "success");
     
-    // تحميل الصورة
-    if (productData.image) {
-      currentImageURL = productData.image;
-      imageUrlInput.value = productData.image;
-      previewImage.src = currentImageURL;
-      previewImage.style.display = "block";
+    // عرض البطاقة
+    displayProductData(productData);
+    
+  } catch (error) {
+    console.error("Error saving product: ", error);
+    showMessage("حدث خطأ أثناء حفظ البيانات: " + error.message, "error");
+    
+    // إعادة إظهار النموذج
+    inputForm.style.display = "block";
+    loadingContainer.style.display = "none";
+  }
+}
+
+// تحميل بيانات المنتج من Firebase
+async function loadProductFromFirebase(productId) {
+  try {
+    inputForm.style.display = "none";
+    loadingContainer.style.display = "block";
+    
+    const doc = await db.collection("products").doc(productId).get();
+    
+    if (doc.exists) {
+      const productData = doc.data();
+      fillFormWithData(productData);
+      displayProductData(productData);
+      showMessage("تم تحميل بيانات المنتج بنجاح!", "success");
+    } else {
+      showMessage("لم يتم العثور على المنتج المطلوب", "error");
+      inputForm.style.display = "block";
+      loadingContainer.style.display = "none";
     }
-    
-    // عرض البطاقة مباشرة
-    displayData();
+  } catch (error) {
+    console.error("Error loading product: ", error);
+    showMessage("حدث خطأ أثناء تحميل البيانات: " + error.message, "error");
+    inputForm.style.display = "block";
+    loadingContainer.style.display = "none";
+  }
+}
+
+// تعبئة النموذج بالبيانات
+function fillFormWithData(productData) {
+  document.getElementById("productName").value = productData.name || "";
+  document.getElementById("size").value = productData.size || "";
+  document.getElementById("rawMaterials").value = productData.rawMaterials || "";
+  document.getElementById("stages").value = productData.stages || "";
+  document.getElementById("tools").value = productData.tools || "";
+  document.getElementById("contributors").value = productData.contributors || "";
+  document.getElementById("colors").value = productData.colors || "";
+  document.getElementById("duration").value = productData.duration || "";
+  document.getElementById("techniques").value = productData.techniques || "";
+  document.getElementById("innovations").value = productData.innovations || "";
+  document.getElementById("price").value = productData.price || "";
+  
+  // تعبئة الحقول الاختيارية
+  fillCheckboxes("productType", productData.type);
+  fillCheckboxes("uses", productData.uses);
+  fillCheckboxes("weight", productData.weight);
+  fillCheckboxes("decoration", productData.decoration);
+  fillCheckboxes("production", productData.production);
+  fillCheckboxes("materialSource", productData.materialSource);
+  
+  // تحميل الصورة
+  if (productData.image) {
+    currentImageURL = productData.image;
+    imageUrlInput.value = productData.image;
+    previewImage.src = currentImageURL;
+    previewImage.style.display = "block";
   }
 }
 
@@ -343,6 +389,50 @@ function fillCheckboxes(name, values) {
   document.querySelectorAll(`input[name="${name}"]`).forEach(checkbox => {
     checkbox.checked = valueArray.includes(checkbox.value);
   });
+}
+
+// عرض بيانات المنتج
+function displayProductData(productData) {
+  const data = {
+    "معرف المنتج": productData.id,
+    "إسم المنتج": productData.name,
+    "نوع المنتج": productData.type,
+    "الاستعمالات": productData.uses,
+    "الحجم": productData.size,
+    "الوزن": productData.weight,
+    "نوع التزيين والرموز": productData.decoration,
+    "الإنتاج": productData.production,
+    "مصدر المادة": productData.materialSource,
+    "المواد الأولية": productData.rawMaterials,
+    "مراحل الإنجاز": productData.stages,
+    "الأدوات المستعملة": productData.tools,
+    "عدد المتدخلين": productData.contributors,
+    "الألوان": productData.colors,
+    "مدة الإنجاز": productData.duration,
+    "التقنيات المستعملة": productData.techniques,
+    "التقنيات المبتكرة": productData.innovations,
+    "السعر": productData.price
+  };
+
+  if (productData.image) {
+    outputImage.src = productData.image;
+  } else {
+    outputImage.removeAttribute("src");
+  }
+
+  let tableHTML = "";
+  for (const key in data) {
+    tableHTML += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
+  }
+  outputTable.innerHTML = tableHTML;
+
+  // إنشاء رابط المنتج وQR Code
+  const productUrl = `${window.location.origin}${window.location.pathname}?id=${productData.id}`;
+  generateQRCode(productUrl);
+
+  // إخفاء شاشة التحميل وإظهار النتيجة
+  loadingContainer.style.display = "none";
+  displayOutput.style.display = "block";
 }
 
 // رجوع للتعديل
