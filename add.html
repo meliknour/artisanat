@@ -2,64 +2,86 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>إضافة منتج</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إضافة منتج جديد</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
-    .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:8px; }
-    h2 { text-align:center; margin-bottom:20px; }
-    label { display:block; margin-top:10px; }
-    input, select, textarea { width:100%; padding:8px; margin-top:5px; border:1px solid #ccc; border-radius:4px; }
-    button { margin-top:20px; padding:10px 15px; background:#3a3b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-    button:hover { background:#2a2b47; }
-    .success { display:none; text-align:center; color:green; margin-top:15px; }
+    body {background:#f4f4f4;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+    .container {background:white;padding:20px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,0.1);max-width:700px;width:100%;}
+    h2{text-align:center;color:#0056b3}
+    label{display:block;margin-top:10px;font-weight:bold}
+    input,select,textarea{width:100%;padding:10px;margin-top:5px;border:1px solid #ccc;border-radius:8px}
+    button{margin-top:15px;width:100%;padding:12px;background:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+    .success{display:none;margin-top:10px;padding:10px;background:#d4edda;color:#155724;border-radius:8px;text-align:center}
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>📥 إضافة منتج جديد</h2>
-    <form id="productForm">
-      <label>اسم المنتج:</label>
-      <input type="text" id="productName" value="لوحة فنية" required>
+    <h2>إضافة منتج جديد</h2>
+    <form id="addForm">
+      <label>رابط صورة المنتج</label>
+      <input type="url" id="image" placeholder="https://example.com/image.jpg" required>
 
-      <label>نوع المنتج:</label>
-      <select id="productType">
-        <option>يدوي</option>
-        <option>يدوي بالآلة</option>
-        <option>آلي</option>
-      </select>
+      <label>اسم المنتج</label>
+      <input type="text" id="name" value="لوحة فنية" required>
 
-      <label>الاستعمالات:</label>
-      <select id="productUsage">
-        <option>التزيين</option>
-        <option>الاستعمال اليومي</option>
-        <option>نفعي</option>
-      </select>
+      <label>نوع المنتج</label>
+      <select id="type"><option>يدوي</option><option>يدوي بالآلة</option><option>آلي</option></select>
 
-      <label>الحجم:</label>
-      <input type="text" id="productSize" value="80 سم × 60 سم">
-
-      <label>الوزن:</label>
-      <select id="productWeight">
-        <option>خفيف</option>
-        <option>متوسط</option>
-        <option>ثقيل</option>
-      </select>
-
-      <label>المواد الأولية:</label>
-      <textarea id="materials">قماش، خشب أبيض، ألوان زيتية</textarea>
-
-      <label>السعر:</label>
+      <label>السعر</label>
       <input type="text" id="price" value="30.000 دج">
 
-      <button type="submit">💾 حفظ المنتج</button>
+      <label>مدة الإنجاز</label>
+      <input type="text" id="duration" value="3 أشهر">
+
+      <label>الحجم</label>
+      <input type="text" id="size" value="80 سم × 60 سم">
+
+      <label>الوزن</label>
+      <select id="weight"><option>خفيف</option><option>متوسط</option><option>ثقيل</option></select>
+
+      <label>الاستعمال</label>
+      <select id="usage"><option>التزيين</option><option>الاستعمال اليومي</option><option>نفعي</option></select>
+
+      <label>الألوان</label>
+      <input type="text" id="colors" value="أحمر - أزرق - أصفر">
+
+      <label>نوع التزيين</label>
+      <select id="decoration"><option>بدون رموز</option><option>نقوش</option><option>رموز تقليدية</option></select>
+
+      <label>الإنتاج</label>
+      <select id="production"><option>حرفي</option><option>مؤسسة</option><option>تعاونية</option></select>
+
+      <label>مصدر المادة</label>
+      <select id="source"><option>محلية</option><option>مستوردة</option></select>
+
+      <label>عدد المتدخلين</label>
+      <input type="text" id="people" value="نجار فني">
+
+      <label>المواد الأولية</label>
+      <textarea id="materials">قماش، خشب أبيض، ألوان زيتية</textarea>
+
+      <label>مراحل الإنجاز</label>
+      <textarea id="steps">بحث - تخطيط - تلوين</textarea>
+
+      <label>الأدوات المستعملة</label>
+      <input type="text" id="tools" value="ريشة، سكين رسم">
+
+      <label>التقنيات المستعملة</label>
+      <input type="text" id="techniques" value="الرسم التجريدي والتعبيري">
+
+      <label>التقنيات المبتكرة</label>
+      <input type="text" id="innovation" value="إدخال سعف النخيل">
+
+      <button type="submit">إضافة المنتج</button>
     </form>
-    <p id="successMessage" class="success">✅ تم الحفظ بنجاح</p>
+    <div class="success" id="successMessage">✅ تمت إضافة المنتج بنجاح!</div>
   </div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, doc, collection, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
@@ -74,28 +96,37 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const form = document.getElementById("productForm");
+    const form = document.getElementById("addForm");
     const successMessage = document.getElementById("successMessage");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const product = {
-        name: document.getElementById("productName").value,
-        type: document.getElementById("productType").value,
-        usage: document.getElementById("productUsage").value,
-        size: document.getElementById("productSize").value,
-        weight: document.getElementById("productWeight").value,
-        materials: document.getElementById("materials").value,
+        image: document.getElementById("image").value,
+        name: document.getElementById("name").value,
+        type: document.getElementById("type").value,
         price: document.getElementById("price").value,
-        createdAt: new Date().toISOString()
+        duration: document.getElementById("duration").value,
+        size: document.getElementById("size").value,
+        weight: document.getElementById("weight").value,
+        usage: document.getElementById("usage").value,
+        colors: document.getElementById("colors").value,
+        decoration: document.getElementById("decoration").value,
+        production: document.getElementById("production").value,
+        source: document.getElementById("source").value,
+        people: document.getElementById("people").value,
+        materials: document.getElementById("materials").value,
+        steps: document.getElementById("steps").value,
+        tools: document.getElementById("tools").value,
+        techniques: document.getElementById("techniques").value,
+        innovation: document.getElementById("innovation").value,
+        timestamp: new Date()
       };
 
       try {
-        // إنشاء ID جديد وتخزينه مع البيانات
         const newDocRef = doc(collection(db, "products"));
         await setDoc(newDocRef, { ...product, id: newDocRef.id });
-
         successMessage.style.display = "block";
         form.reset();
         setTimeout(() => successMessage.style.display = "none", 3000);
