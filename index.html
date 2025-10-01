@@ -2,87 +2,92 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>عرض بطاقة المنتج</title>
+  <title>بطاقة تقنية للمنتوج</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
-    .container { max-width:900px; margin:auto; background:#fff; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-    h1 { text-align:center; color:#0056b3; border-bottom:3px solid #0056b3; padding-bottom:10px; }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    th, td { border:1px solid #ddd; padding:10px; text-align:right; }
-    th { background:#e9ecef; width:35%; }
-    #productImage { max-width:100%; max-height:250px; border:1px solid #ddd; border-radius:4px; margin:20px auto; display:block; }
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .product-img { width: 300px; margin: 20px auto; }
+    .qr { margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px; }
   </style>
 </head>
 <body>
-
-<div class="container">
   <h1>بطاقة تقنية للمنتوج</h1>
-  <img id="productImage" alt="صورة المنتج">
-  <table id="productTable"></table>
-</div>
+  <div id="product"></div>
+  <button onclick="generatePDF()">تحميل PDF</button>
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script>
+  // إعداد Firebase
+  const firebaseConfig = {
+    apiKey: "YOUR_KEY",
+    authDomain: "artisanat-161f3.firebaseapp.com",
+    projectId: "artisanat-161f3",
+    storageBucket: "artisanat-161f3.appspot.com",
+    messagingSenderId: "YOUR_ID",
+    appId: "YOUR_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-// إعداد Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
-  authDomain: "artisanat-161f3.firebaseapp.com",
-  projectId: "artisanat-161f3",
-  storageBucket: "artisanat-161f3.firebasestorage.app",
-  messagingSenderId: "203989144161",
-  appId: "1:203989144161:web:88273bf2b917ddc0a65020",
-  measurementId: "G-9350J62Z5H"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// استخراج ID من الرابط
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
-
-if (id) {
-  loadProduct(id);
-} else {
-  document.querySelector(".container").innerHTML = "<h2 style='color:red;text-align:center'>⚠️ لا يوجد معرف منتج</h2>";
-}
-
-async function loadProduct(id) {
-  try {
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-
-      // صورة
-      if (data.imageUrl) {
-        document.getElementById("productImage").src = data.imageUrl;
-      } else {
-        document.getElementById("productImage").style.display = "none";
-      }
-
-      // الجدول
-      let html = "";
-      for (const key in data) {
-        if (key !== "imageUrl" && key !== "createdAt") {
-          html += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
-        }
-      }
-      document.getElementById("productTable").innerHTML = html;
-
-    } else {
-      document.querySelector(".container").innerHTML = "<h2 style='color:red;text-align:center'>⚠️ المنتج غير موجود</h2>";
+  // تحميل المنتج الأول
+  let currentProduct = null;
+  async function loadProduct() {
+    const snap = await db.collection("products").limit(1).get();
+    if (!snap.empty) {
+      const data = snap.docs[0].data();
+      currentProduct = data;
+      document.getElementById("product").innerHTML = `
+        <h2>${data.name}</h2>
+        <img src="${data.image}" class="product-img">
+        <div class="qr"><img src="${data.qr}"></div>
+      `;
     }
-  } catch (e) {
-    console.error("❌ خطأ أثناء جلب المنتج:", e);
-    document.querySelector(".container").innerHTML = "<h2 style='color:red;text-align:center'>❌ خطأ في تحميل البيانات</h2>";
   }
-}
-</script>
+  loadProduct();
 
+  // تحويل الصورة إلى Base64
+  function getBase64ImageFromUrl(url) {
+    return new Promise((resolve, reject) => {
+      let img = new Image();
+      img.setAttribute("crossOrigin", "anonymous");
+      img.onload = () => {
+        let canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = error => reject(error);
+      img.src = url;
+    });
+  }
+
+  // توليد PDF
+  async function generatePDF() {
+    if (!currentProduct) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("بطاقة تقنية للمنتوج", 70, 20);
+
+    // صورة المنتج في الوسط
+    if (currentProduct.image) {
+      const productImg = await getBase64ImageFromUrl(currentProduct.image);
+      doc.addImage(productImg, "PNG", 55, 40, 100, 100);
+    }
+
+    // QR في الأسفل
+    if (currentProduct.qr) {
+      const qrImg = await getBase64ImageFromUrl(currentProduct.qr);
+      doc.addImage(qrImg, "PNG", 80, 150, 50, 50);
+    }
+
+    doc.save("fiche-technique.pdf");
+  }
+</script>
 </body>
 </html>
