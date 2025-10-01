@@ -3,8 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <title>عرض المنتجات</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script type="module">
+    // ✅ استيراد Firebase V9
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    // ✅ التهيئة
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const productsList = document.getElementById("productsList");
+    const loadingText = document.getElementById("loading");
+    const productsTable = document.getElementById("productsTable");
+
+    async function loadProducts() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+
+        if (querySnapshot.empty) {
+          loadingText.textContent = "❌ لا توجد منتجات";
+          return;
+        }
+
+        loadingText.style.display = "none";
+        productsTable.style.display = "table";
+
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const id = docSnap.id; // ✅ المعرف الحقيقي
+          const name = data.productName || "بدون اسم";
+          const link = `edit.html?id=${id}`;
+          const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${name}</td>
+            <td>${id}</td>
+            <td><a href="${link}" target="_blank">${link}</a></td>
+            <td>
+              <a href="${link}" class="btn-edit">✏️ تعديل</a>
+              <a href="viewProduct.html?id=${id}" class="btn-view">👁️ عرض</a>
+              <a href="${qrLink}" target="_blank" class="btn-qr">📱 QR</a>
+              <button class="btn-delete" onclick="deleteProduct('${id}')">🗑️ حذف</button>
+            </td>
+          `;
+          productsList.appendChild(row);
+        });
+      } catch (error) {
+        console.error("خطأ في جلب البيانات:", error);
+        loadingText.textContent = "⚠️ حدث خطأ أثناء تحميل البيانات";
+      }
+    }
+
+    // ✅ حذف منتج
+    window.deleteProduct = async function(id) {
+      if (confirm("هل تريد حذف هذا المنتج؟")) {
+        await deleteDoc(doc(db, "products", id));
+        alert("✅ تم الحذف بنجاح");
+        location.reload();
+      }
+    }
+
+    loadProducts();
+  </script>
   <style>
     body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
     h1 { text-align:center; color:#3a3b57; }
@@ -32,75 +104,5 @@
     </thead>
     <tbody id="productsList"></tbody>
   </table>
-
-  <script>
-    // ✅ Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
-      authDomain: "artisanat-161f3.firebaseapp.com",
-      projectId: "artisanat-161f3",
-      storageBucket: "artisanat-161f3.appspot.com",
-      messagingSenderId: "203989144161",
-      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
-      measurementId: "G-9350J62Z5H"
-    };
-
-    // ✅ تهيئة Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
-
-    const productsList = document.getElementById("productsList");
-    const loadingText = document.getElementById("loading");
-    const productsTable = document.getElementById("productsTable");
-
-    async function loadProducts() {
-      try {
-        const querySnapshot = await db.collection("products").get();
-
-        if (querySnapshot.empty) {
-          loadingText.textContent = "❌ لا توجد منتجات";
-          return;
-        }
-
-        loadingText.style.display = "none";
-        productsTable.style.display = "table";
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const id = doc.id; // ✅ المعرف الحقيقي من Firestore
-          const name = data.productName || "بدون اسم";
-          const link = `edit.html?id=${id}`;
-          const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
-
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${name}</td>
-            <td>${id}</td>
-            <td><a href="${link}" target="_blank">${link}</a></td>
-            <td>
-              <a href="${link}" class="btn-edit">✏️ تعديل</a>
-              <a href="viewProduct.html?id=${id}" class="btn-view">👁️ عرض</a>
-              <a href="${qrLink}" target="_blank" class="btn-qr">📱 QR</a>
-              <button class="btn-delete" onclick="deleteProduct('${id}')">🗑️ حذف</button>
-            </td>
-          `;
-          productsList.appendChild(row);
-        });
-      } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
-        loadingText.textContent = "⚠️ حدث خطأ أثناء تحميل البيانات";
-      }
-    }
-
-    async function deleteProduct(id) {
-      if (confirm("هل تريد حذف هذا المنتج؟")) {
-        await db.collection("products").doc(id).delete();
-        alert("✅ تم الحذف بنجاح");
-        location.reload();
-      }
-    }
-
-    loadProducts();
-  </script>
 </body>
 </html>
