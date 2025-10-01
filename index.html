@@ -3,91 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <title>بطاقة تقنية للمنتوج</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
+    .container { max-width:900px; margin:auto; background:#fff; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+    h1 { text-align:center; color:#0056b3; border-bottom:3px solid #0056b3; padding-bottom:10px; }
+    #displayOutput table { width:100%; border-collapse:collapse; margin-top:20px; }
+    #displayOutput th, #displayOutput td { border:1px solid #ddd; padding:10px; text-align:right; }
+    #displayOutput th { background:#e9ecef; width:35%; }
+    #outputImage { max-width:100%; max-height:250px; border:1px solid #ddd; border-radius:4px; margin-bottom:15px; }
+    #qrContainer { text-align:center; margin:20px 0; }
+    #qrCode { max-width:200px; margin:0 auto; }
+    .product-link { text-align: center; margin: 15px 0; font-weight: bold; }
+    .loading { text-align: center; padding: 20px; }
+    .error-message { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
+    button { margin-top:20px; padding:12px; border:none; border-radius:6px; cursor:pointer; background:#007bff; color:#fff; display:block; width:30%; margin:20px auto 0; }
+  </style>
+  
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; }
-    .product-img { width: 300px; margin: 20px auto; }
-    .qr { margin-top: 20px; }
-    button { margin-top: 20px; padding: 10px; }
-  </style>
 </head>
 <body>
+
+<div class="container" id="displayOutput">
   <h1>بطاقة تقنية للمنتوج</h1>
-  <div id="product"></div>
-  <button onclick="generatePDF()">تحميل PDF</button>
+  <div style="text-align:center;">
+    <img id="outputImage">
+  </div>
+  <table id="outputTable"></table>
+  
+  <!-- QR Code ورابط المنتج -->
+  <div id="qrContainer">
+    <h3>رمز QR للمنتج</h3>
+    <div id="qrCode"></div>
+    <div class="product-link" id="productLink"></div>
+  </div>
+  
+  <button id="pdfButton" type="button" onclick="downloadPDF()">تحميل PDF</button>
+</div>
+
+<div class="container loading" id="loadingContainer">
+  <h2>جاري تحميل بيانات المنتج...</h2>
+</div>
+
+<div class="container error-message hidden" id="errorContainer">
+  <h2>خطأ في تحميل البيانات</h2>
+  <p id="errorMessage"></p>
+</div>
+
+<!-- مكتبات -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-  // إعداد Firebase
-  const firebaseConfig = {
-    apiKey: "YOUR_KEY",
-    authDomain: "artisanat-161f3.firebaseapp.com",
-    projectId: "artisanat-161f3",
-    storageBucket: "artisanat-161f3.appspot.com",
-    messagingSenderId: "YOUR_ID",
-    appId: "YOUR_APP_ID"
+// تهيئة Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+  authDomain: "artisanat-161f3.firebaseapp.com",
+  projectId: "artisanat-161f3",
+  storageBucket: "artisanat-161f3.appspot.com",
+  messagingSenderId: "203989144161",
+  appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+  measurementId: "G-9350J62Z5H"
+};
+
+// تهيئة Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const displayOutput = document.getElementById("displayOutput");
+const loadingContainer = document.getElementById("loadingContainer");
+const errorContainer = document.getElementById("errorContainer");
+const errorMessage = document.getElementById("errorMessage");
+const outputImage = document.getElementById("outputImage");
+const outputTable = document.getElementById("outputTable");
+const qrContainer = document.getElementById("qrCode");
+const productLink = document.getElementById("productLink");
+
+// معالجة معرّف المنتج من الرابط
+function getProductIdFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('id');
+}
+
+// تحميل بيانات المنتج من Firebase
+async function loadProductFromFirebase(productId) {
+  try {
+    const doc = await db.collection("products").doc(productId).get();
+    
+    if (doc.exists) {
+      const productData = doc.data();
+      displayProductData(productData);
+    } else {
+      showError("لم يتم العثور على المنتج المطلوب");
+    }
+  } catch (error) {
+    console.error("Error loading product: ", error);
+    showError("حدث خطأ أثناء تحميل البيانات: " + error.message);
+  }
+}
+
+// عرض رسالة خطأ
+function showError(message) {
+  loadingContainer.style.display = "none";
+  errorMessage.textContent = message;
+  errorContainer.style.display = "block";
+}
+
+// إنشاء QR Code
+function generateQRCode(productUrl) {
+  // مسح أي QR Code موجود مسبقاً
+  qrContainer.innerHTML = "";
+  productLink.innerHTML = `<a href="${productUrl}" target="_blank">${productUrl}</a>`;
+  
+  // إنشاء QR Code جديد
+  new QRCode(qrContainer, {
+    text: productUrl,
+    width: 200,
+    height: 200,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+// عرض بيانات المنتج
+function displayProductData(productData) {
+  const data = {
+    "معرف المنتج": productData.id,
+    "إسم المنتج": productData.name,
+    "نوع المنتج": productData.type,
+    "الاستعمالات": productData.uses,
+    "الحجم": productData.size,
+    "الوزن": productData.weight,
+    "نوع التزيين والرموز": productData.decoration,
+    "الإنتاج": productData.production,
+    "مصدر المادة": productData.materialSource,
+    "المواد الأولية": productData.rawMaterials,
+    "مراحل الإنجاز": productData.stages,
+    "الأدوات المستعملة": productData.tools,
+    "عدد المتدخلين": productData.contributors,
+    "الألوان": productData.colors,
+    "مدة الإنجاز": productData.duration,
+    "التقنيات المستعملة": productData.techniques,
+    "التقنيات المبتكرة": productData.innovations,
+    "السعر": productData.price
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
 
-  // تحميل المنتج الأول
-  let currentProduct = null;
-  async function loadProduct() {
-    const snap = await db.collection("products").limit(1).get();
-    if (!snap.empty) {
-      const data = snap.docs[0].data();
-      currentProduct = data;
-      document.getElementById("product").innerHTML = `
-        <h2>${data.name}</h2>
-        <img src="${data.image}" class="product-img">
-        <div class="qr"><img src="${data.qr}"></div>
-      `;
-    }
+  if (productData.image) {
+    outputImage.src = productData.image;
+    outputImage.style.display = "block";
+  } else {
+    outputImage.style.display = "none";
   }
-  loadProduct();
 
-  // تحويل الصورة إلى Base64
-  function getBase64ImageFromUrl(url) {
-    return new Promise((resolve, reject) => {
-      let img = new Image();
-      img.setAttribute("crossOrigin", "anonymous");
-      img.onload = () => {
-        let canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        let ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
-      };
-      img.onerror = error => reject(error);
-      img.src = url;
+  let tableHTML = "";
+  for (const key in data) {
+    tableHTML += `<tr><th>${key}</th><td>${data[key] || "غير محدد"}</td></tr>`;
+  }
+  outputTable.innerHTML = tableHTML;
+
+  // إنشاء رابط المنتج وQR Code
+  const productUrl = `${window.location.origin}${window.location.pathname}?id=${productData.id}`;
+  generateQRCode(productUrl);
+
+  // إخفاء شاشة التحميل وإظهار النتيجة
+  loadingContainer.style.display = "none";
+  displayOutput.style.display = "block";
+}
+
+// تحميل PDF
+async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
+  
+  try {
+    const productId = getProductIdFromURL();
+    const productData = await (await db.collection("products").doc(productId).get()).data();
+    
+    // إضافة عنوان البطاقة
+    doc.setFontSize(20);
+    doc.setTextColor(0, 86, 179);
+    doc.text("بطاقة تقنية للمنتوج", 105, 20, { align: "center" });
+    
+    let yPosition = 40;
+    
+    // إضافة صورة المنتج إذا كانت متوفرة
+    if (productData.image) {
+      try {
+        const imgData = await loadImageForPDF(productData.image);
+        if (imgData) {
+          const imgWidth = 80;
+          const imgHeight = 60;
+          doc.addImage(imgData, 'JPEG', (210 - imgWidth) / 2, yPosition, imgWidth, imgHeight);
+          yPosition += imgHeight + 10;
+        }
+      } catch (error) {
+        console.error("Error loading product image for PDF:", error);
+      }
+    }
+    
+    // جمع بيانات الجدول
+    const tableData = [
+      ["إسم المنتج", productData.name || "غير محدد"],
+      ["نوع المنتج", productData.type || "غير محدد"],
+      ["الاستعمالات", productData.uses || "غير محدد"],
+      ["الحجم", productData.size || "غير محدد"],
+      ["الوزن", productData.weight || "غير محدد"],
+      ["نوع التزيين والرموز", productData.decoration || "غير محدد"],
+      ["الإنتاج", productData.production || "غير محدد"],
+      ["مصدر المادة", productData.materialSource || "غير محدد"],
+      ["المواد الأولية", productData.rawMaterials || "غير محدد"],
+      ["مراحل الإنجاز", productData.stages || "غير محدد"],
+      ["الأدوات المستعملة", productData.tools || "غير محدد"],
+      ["عدد المتدخلين", productData.contributors || "غير محدد"],
+      ["الألوان", productData.colors || "غير محدد"],
+      ["مدة الإنجاز", productData.duration || "غير محدد"],
+      ["التقنيات المستعملة", productData.techniques || "غير محدد"],
+      ["التقنيات المبتكرة", productData.innovations || "غير محدد"],
+      ["السعر", productData.price || "غير محدد"]
+    ];
+    
+    // إضافة البيانات كجدول
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    tableData.forEach(([key, value], index) => {
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFillColor(233, 236, 239);
+      doc.rect(20, yPosition, 50, 8, 'F');
+      doc.setTextColor(0, 0, 0);
+      doc.text(key, 25, yPosition + 5);
+      
+      // تقسيم النص الطويل إلى أسطر متعددة
+      const lines = doc.splitTextToSize(value, 120);
+      doc.text(lines, 75, yPosition + 5);
+      
+      yPosition += Math.max(8, lines.length * 5) + 2;
     });
+    
+    // حفظ الملف
+    doc.save(`بطاقة-المنتوج-${productId}.pdf`);
+    
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("حدث خطأ أثناء إنشاء PDF");
   }
+}
 
-  // توليد PDF
-  async function generatePDF() {
-    if (!currentProduct) return;
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+// دالة مساعدة لتحميل الصور لـ PDF
+function loadImageForPDF(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = function() {
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
+}
 
-    doc.setFontSize(18);
-    doc.text("بطاقة تقنية للمنتوج", 70, 20);
-
-    // صورة المنتج في الوسط
-    if (currentProduct.image) {
-      const productImg = await getBase64ImageFromUrl(currentProduct.image);
-      doc.addImage(productImg, "PNG", 55, 40, 100, 100);
-    }
-
-    // QR في الأسفل
-    if (currentProduct.qr) {
-      const qrImg = await getBase64ImageFromUrl(currentProduct.qr);
-      doc.addImage(qrImg, "PNG", 80, 150, 50, 50);
-    }
-
-    doc.save("fiche-technique.pdf");
+// تحميل الصفحة
+window.onload = function() {
+  const productId = getProductIdFromURL();
+  
+  if (productId) {
+    loadProductFromFirebase(productId);
+  } else {
+    showError("لم يتم تحديد معرف المنتج في الرابط");
   }
+};
 </script>
+
 </body>
 </html>
