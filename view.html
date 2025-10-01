@@ -2,41 +2,39 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>قائمة المنتجات</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <title>عرض المنتجات</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
   <style>
-    body {background:#eef2f7;font-family:Arial,sans-serif;padding:20px;}
-    h2{text-align:center;color:#333}
-    table{width:100%;border-collapse:collapse;margin-top:20px;background:white;border-radius:10px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,0.1);}
-    th,td{padding:12px;border-bottom:1px solid #ddd;text-align:center;}
-    th{background:#0056b3;color:white;}
-    tr:hover{background:#f1f1f1}
-    a{color:#0056b3;text-decoration:none;font-weight:bold}
-    .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
+    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:20px; }
+    h1 { text-align:center; color:#3a3b57; }
+    table { width:100%; border-collapse: collapse; background:#fff; box-shadow:0 0 5px rgba(0,0,0,.2); }
+    th, td { border:1px solid #ccc; padding:10px; text-align:center; }
+    th { background:#3a3b57; color:white; }
+    a, button { margin:0 5px; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; text-decoration:none; }
+    .btn-view { background:#3498db; color:white; }
+    .btn-edit { background:#f39c12; color:white; }
+    .btn-delete { background:#e74c3c; color:white; }
+    .btn-qr { background:#2ecc71; color:white; }
   </style>
 </head>
 <body>
-  <h2>📋 قائمة المنتجات</h2>
-  <div id="loading" class="loading">⏳ جارٍ تحميل البيانات...</div>
-  <table id="productsTable" style="display:none">
+  <h1>📋 قائمة المنتجات</h1>
+  <p id="loading">⏳ جارٍ تحميل البيانات...</p>
+  <table id="productsTable" style="display:none;">
     <thead>
       <tr>
         <th>اسم المنتج</th>
-        <th>المعرف (ID)</th>
+        <th>المعرف</th>
         <th>الرابط</th>
-        <th>QR</th>
-        <th>إجراءات</th>
+        <th>الخيارات</th>
       </tr>
     </thead>
-    <tbody id="productsBody"></tbody>
+    <tbody id="productsList"></tbody>
   </table>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
+  <script>
+    // ✅ Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
       authDomain: "artisanat-161f3.firebaseapp.com",
@@ -47,34 +45,59 @@
       measurementId: "G-9350J62Z5H"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // ✅ تهيئة Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
 
-    const tbody = document.getElementById("productsBody");
-    const loading = document.getElementById("loading");
-    const table = document.getElementById("productsTable");
+    const productsList = document.getElementById("productsList");
+    const loadingText = document.getElementById("loading");
+    const productsTable = document.getElementById("productsTable");
 
     async function loadProducts() {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      loading.style.display = "none";
-      table.style.display = "table";
+      try {
+        const querySnapshot = await db.collection("products").get();
 
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${data.name || "بدون اسم"}</td>
-          <td>${docSnap.id}</td>
-          <td><a href="edit.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
-          <td><a href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://meliknour.github.io/artisanat/edit.html?id=${docSnap.id}" target="_blank">📷 QR</a></td>
-          <td>
-            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
-            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
-            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+        if (querySnapshot.empty) {
+          loadingText.textContent = "❌ لا توجد منتجات";
+          return;
+        }
+
+        loadingText.style.display = "none";
+        productsTable.style.display = "table";
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const id = doc.id; // ✅ المعرف الحقيقي من Firestore
+          const name = data.productName || "بدون اسم";
+          const link = `edit.html?id=${id}`;
+          const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${name}</td>
+            <td>${id}</td>
+            <td><a href="${link}" target="_blank">${link}</a></td>
+            <td>
+              <a href="${link}" class="btn-edit">✏️ تعديل</a>
+              <a href="viewProduct.html?id=${id}" class="btn-view">👁️ عرض</a>
+              <a href="${qrLink}" target="_blank" class="btn-qr">📱 QR</a>
+              <button class="btn-delete" onclick="deleteProduct('${id}')">🗑️ حذف</button>
+            </td>
+          `;
+          productsList.appendChild(row);
+        });
+      } catch (error) {
+        console.error("خطأ في جلب البيانات:", error);
+        loadingText.textContent = "⚠️ حدث خطأ أثناء تحميل البيانات";
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (confirm("هل تريد حذف هذا المنتج؟")) {
+        await db.collection("products").doc(id).delete();
+        alert("✅ تم الحذف بنجاح");
+        location.reload();
+      }
     }
 
     loadProducts();
