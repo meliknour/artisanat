@@ -56,10 +56,15 @@
       background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
     }
 
-    h1 {
+    .page-header {
       text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    h1 {
       color: var(--primary-color);
-      margin-bottom: 25px;
+      margin-bottom: 10px;
       font-weight: 700;
       font-size: 2.2rem;
       position: relative;
@@ -76,6 +81,18 @@
       height: 3px;
       background: var(--secondary-color);
       border-radius: 3px;
+    }
+
+    .product-id {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      box-shadow: 0 3px 10px rgba(139, 90, 43, 0.3);
+      margin-top: 10px;
     }
 
     .product-header {
@@ -188,16 +205,6 @@
       transition: var(--transition);
     }
 
-    .product-id {
-      display: inline-block;
-      background: var(--primary-color);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      margin-bottom: 15px;
-    }
-
     /* تحسينات للشاشات الصغيرة */
     @media (max-width: 768px) {
       .container {
@@ -224,7 +231,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .product-header, .detail-item, .action-buttons {
+    .page-header, .product-header, .detail-item, .action-buttons {
       animation: fadeIn 0.5s ease forwards;
     }
 
@@ -287,12 +294,21 @@
       .product-header h2 {
         font-size: 16pt;
       }
+      
+      .product-id {
+        background: #f0f0f0;
+        color: #333;
+        box-shadow: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📝 تفاصيل المنتج</h1>
+    <div class="page-header">
+      <h1>📝 تفاصيل المنتج</h1>
+      <div class="product-id">رقم المنتج: <span id="productNumber">001</span></div>
+    </div>
     <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
   </div>
 
@@ -319,12 +335,16 @@
     const productId = params.get("id");
 
     const container = document.getElementById("productDetails");
+    const productNumberElement = document.getElementById("productNumber");
 
     // ✅ دالة لتنسيق رقم المنتج
     function formatProductId(id) {
-      if (!id) return "-";
+      if (!id) return "001";
       return String(id).padStart(3, '0');
     }
+
+    // ✅ تحديث رقم المنتج في الواجهة
+    productNumberElement.textContent = formatProductId(productId);
 
     async function loadProduct() {
       if (!productId) {
@@ -341,7 +361,6 @@
 
           container.innerHTML = `
             <div class="product-header">
-              <div class="product-id">رقم المنتج: ${formatProductId(productId)}</div>
               <h2>${data.name || "منتج بدون اسم"}</h2>
               <img src="${data.image || ""}" alt="صورة المنتج" class="product-image">
             </div>
