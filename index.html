@@ -16,6 +16,7 @@
     a{color:#0056b3;text-decoration:none;font-weight:bold}
     .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
     img.qr{border:1px solid #ccc;border-radius:6px;}
+    .product-number {font-weight:bold;color:#0056b3;background:#e6f2ff;padding:4px 8px;border-radius:4px;}
   </style>
 </head>
 <body>
@@ -24,8 +25,8 @@
   <table id="productsTable" style="display:none">
     <thead>
       <tr>
+        <th>الترتيب</th>
         <th>اسم المنتج</th>
-        <th>المعرف (ID)</th>
         <th>الرابط</th>
         <th>QR</th>
       </tr>
@@ -35,7 +36,13 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { 
+      getFirestore, 
+      collection, 
+      getDocs, 
+      query, 
+      orderBy 
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
@@ -54,29 +61,54 @@
     const loading = document.getElementById("loading");
     const table = document.getElementById("productsTable");
 
+    // دالة لتنسيق الرقم إلى 3 خانات
+    function formatProductNumber(index) {
+      return String(index).padStart(3, '0');
+    }
+
     async function loadProducts() {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      loading.style.display = "none";
-      table.style.display = "table";
+      try {
+        // جلب المنتجات مرتبة حسب timestamp تصاعدياً (من الأقدم إلى الأحدث)
+        const productsCollection = collection(db, "products");
+        const q = query(productsCollection, orderBy("timestamp", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        loading.style.display = "none";
+        table.style.display = "table";
 
-      if (querySnapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="5">🚫 لا توجد منتجات</td></tr>`;
-        return;
+        if (querySnapshot.empty) {
+          tbody.innerHTML = `<tr><td colspan="4">🚫 لا توجد منتجات</td></tr>`;
+          return;
+        }
+
+        let productIndex = 1;
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const productNumber = formatProductNumber(productIndex);
+          const viewUrl = `https://meliknour.github.io/artisanat/view.html?id=${docSnap.id}`;
+          
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>
+              <span class="product-number">${productNumber}</span>
+            </td>
+            <td>${data.name || "بدون اسم"}</td>
+            <td><a href="view.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
+            <td>
+              <img class="qr" 
+                   src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(viewUrl)}" 
+                   alt="QR Code"
+                   title="QR Code للمنتج ${productNumber}">
+            </td>
+          `;
+          tbody.appendChild(tr);
+          productIndex++;
+        });
+
+      } catch (error) {
+        console.error("خطأ في تحميل المنتجات:", error);
+        loading.innerHTML = "❌ حدث خطأ في تحميل البيانات";
       }
-
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const tr = document.createElement("tr");
-        const viewUrl = `https://meliknour.github.io/artisanat/view.html?id=${docSnap.id}`;
-        tr.innerHTML = `
-          <td>${data.name || "بدون اسم"}</td>
-          <td>${docSnap.id}</td>
-          <td><a href="view.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
-          <td><img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${viewUrl}" alt="QR Code"></td>
-
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
     loadProducts();
