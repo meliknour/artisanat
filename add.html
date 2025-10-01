@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إضافة منتج</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+</head>
+<body>
+  <h2>إضافة منتج جديد</h2>
+  <form id="addForm">
+    <label>نوع المنتج:</label>
+    <select id="type">
+      <option>يدوي</option>
+      <option>يدوي بالآلة</option>
+      <option>آلي</option>
+    </select><br>
+
+    <label>الاستعمال:</label>
+    <select id="usage">
+      <option>التزيين</option>
+      <option>الاستعمال اليومي</option>
+      <option>نفعي</option>
+    </select><br>
+
+    <label>الحجم:</label>
+    <input type="text" id="size" value="80 سم × 60 سم"><br>
+
+    <label>الوزن:</label>
+    <select id="weight">
+      <option>خفيف</option>
+      <option>متوسط</option>
+      <option>ثقيل</option>
+    </select><br>
+
+    <label>نوع التزيين والرموز:</label>
+    <select id="decoration">
+      <option>بدون رموز</option>
+      <option>نقوش</option>
+      <option>رموز تقليدية</option>
+    </select><br>
+
+    <label>الإنتاج:</label>
+    <select id="production">
+      <option>حرفي</option>
+      <option>مؤسسة</option>
+      <option>تعاونية</option>
+    </select><br>
+
+    <label>مصدر المادة:</label>
+    <select id="source">
+      <option>محلية</option>
+      <option>مستوردة</option>
+    </select><br>
+
+    <label>اسم المنتج:</label>
+    <input type="text" id="name" value="لوحة فنية"><br>
+
+    <label>المواد الأولية:</label>
+    <input type="text" id="materials" value="قماش، خشب أبيض، ألوان زيتية"><br>
+
+    <label>مراحل الإنجاز:</label>
+    <input type="text" id="steps" value="بحث - تخطيط - تلوين"><br>
+
+    <label>الأدوات المستعملة:</label>
+    <input type="text" id="tools" value="ريشة، سكين رسم"><br>
+
+    <label>عدد المتدخلين:</label>
+    <input type="text" id="people" value="نجار فني"><br>
+
+    <label>الألوان:</label>
+    <input type="text" id="colors" value="أحمر - أزرق - أصفر"><br>
+
+    <label>مدة الإنجاز:</label>
+    <input type="text" id="duration" value="3 أشهر"><br>
+
+    <label>التقنيات المستعملة:</label>
+    <input type="text" id="techniques" value="الرسم التجريدي والتعبيري"><br>
+
+    <label>التقنيات المبتكرة:</label>
+    <input type="text" id="innovation" value="إدخال سعف النخيل"><br>
+
+    <label>السعر:</label>
+    <input type="text" id="price" value="30.000 دج"><br>
+
+    <button type="submit">حفظ المنتج</button>
+  </form>
+
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+  authDomain: "artisanat-161f3.firebaseapp.com",
+  projectId: "artisanat-161f3",
+  storageBucket: "artisanat-161f3.firebasestorage.app",
+  messagingSenderId: "203989144161",
+  appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+  measurementId: "G-9350J62Z5H"
+};
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    document.getElementById("addForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const product = {
+        type: document.getElementById("type").value,
+        usage: document.getElementById("usage").value,
+        size: document.getElementById("size").value,
+        weight: document.getElementById("weight").value,
+        decoration: document.getElementById("decoration").value,
+        production: document.getElementById("production").value,
+        source: document.getElementById("source").value,
+        name: document.getElementById("name").value,
+        materials: document.getElementById("materials").value,
+        steps: document.getElementById("steps").value,
+        tools: document.getElementById("tools").value,
+        people: document.getElementById("people").value,
+        colors: document.getElementById("colors").value,
+        duration: document.getElementById("duration").value,
+        techniques: document.getElementById("techniques").value,
+        innovation: document.getElementById("innovation").value,
+        price: document.getElementById("price").value,
+      };
+
+      await db.collection("products").add(product);
+      alert("تمت إضافة المنتج بنجاح!");
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
