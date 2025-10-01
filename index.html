@@ -2,97 +2,96 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>صفحة المنتج</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>قائمة المنتجات</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f9f9f9; padding:20px; }
+    h1 { text-align:center; color:#3a3b57; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    th, td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
+    th { background:#3a3b57; color:#fff; }
+    tr:hover { background:#f1f1f1; }
+    .qr { width:80px; height:80px; }
+  </style>
 </head>
 <body>
-  <div id="product">
-    <h2 id="productName">اسم المنتج</h2>
-    <p id="productDesc">وصف المنتج هنا</p>
-    <img id="productImage" src="https://via.placeholder.com/150" alt="صورة المنتج" />
-    <div id="qrCode"></div>
-    <button onclick="downloadPDF()">تحميل PDF</button>
-  </div>
 
-  <script>
-    const productData = {
-      name: document.getElementById("productName").innerText,
-      desc: document.getElementById("productDesc").innerText,
-      image: document.getElementById("productImage").src,
-      link: window.location.href
+  <h1>📦 قائمة المنتجات</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>اسم المنتج</th>
+        <th>رمز QR</th>
+        <th>رابط العرض</th>
+      </tr>
+    </thead>
+    <tbody id="productList">
+      <tr><td colspan="3">⏳ جاري تحميل البيانات...</td></tr>
+    </tbody>
+  </table>
+
+  <script type="module">
+    // ✅ إعداد Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
     };
 
-    // توليد QR
-    new QRCode(document.getElementById("qrCode"), {
-      text: productData.link,
-      width: 128,
-      height: 128
-    });
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // تحويل أي صورة إلى Base64
-    function loadImageForPDF(url) {
-      return new Promise((resolve, reject) => {
-        let img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = function () {
-          let canvas = document.createElement("canvas");
-          canvas.width = this.width;
-          canvas.height = this.height;
-          let ctx = canvas.getContext("2d");
-          ctx.drawImage(this, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        };
-        img.onerror = reject;
-        img.src = url;
-      });
-    }
-
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      let yPosition = 20;
-
-      doc.setFontSize(16);
-      doc.text("بطاقة تقنية للمنتوج", 105, yPosition, { align: "center" });
-      yPosition += 20;
-
-      doc.setFontSize(12);
-      doc.text(`اسم المنتج: ${productData.name}`, 10, yPosition);
-      yPosition += 10;
-      doc.text(`الوصف: ${productData.desc}`, 10, yPosition);
-      yPosition += 20;
-
-      // إضافة صورة المنتج
-      if (productData.image) {
-        try {
-          const imgData = await loadImageForPDF(productData.image);
-          if (imgData) {
-            const imgWidth = 80;
-            const imgHeight = 60;
-            doc.addImage(imgData, 'PNG', (210 - imgWidth) / 2, yPosition, imgWidth, imgHeight);
-            yPosition += imgHeight + 20;
-          }
-        } catch (error) {
-          console.error("خطأ في تحميل صورة المنتج:", error);
-        }
-      }
-
-      // إضافة QR Code
+    // ✅ تحميل المنتجات من Firestore
+    async function loadProducts() {
+      const list = document.getElementById("productList");
+      list.innerHTML = "";
       try {
-        const qrCanvas = document.querySelector("#qrCode canvas");
-        if (qrCanvas) {
-          const qrData = qrCanvas.toDataURL("image/png");
-          doc.addImage(qrData, "PNG", (210 - 50) / 2, yPosition, 50, 50);
-          yPosition += 60;
+        const snapshot = await db.collection("products").get();
+        if (snapshot.empty) {
+          list.innerHTML = "<tr><td colspan='3'>🚫 لا توجد منتجات</td></tr>";
+          return;
         }
-      } catch (error) {
-        console.error("خطأ في إضافة QR:", error);
-      }
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const id = doc.id;
+          const name = data.name || "بدون اسم";
 
-      doc.save("fiche-technique.pdf");
+          // رابط العرض
+          const viewUrl = `view.html?id=${id}`;
+          const fullUrl = `https://meliknour.github.io/artisanat/${viewUrl}`;
+
+          // توليد QR
+          const canvas = document.createElement("canvas");
+          new QRious({
+            element: canvas,
+            value: fullUrl,
+            size: 80
+          });
+
+          const row = `
+            <tr>
+              <td>${name}</td>
+              <td><img src="${canvas.toDataURL()}" class="qr"></td>
+              <td><a href="${viewUrl}" target="_blank">🔗 فتح المنتج</a></td>
+            </tr>
+          `;
+          list.innerHTML += row;
+        });
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = "<tr><td colspan='3'>⚠️ خطأ في تحميل البيانات</td></tr>";
+      }
     }
+
+    loadProducts();
   </script>
+
 </body>
 </html>
