@@ -1,106 +1,99 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>تفاصيل المنتج</title>
+
+  <!-- خط جمالي -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <style>
-    :root {
-      --primary-color: #8b5a2b;
-      --secondary-color: #d4a574;
-      --accent-color: #a87c4f;
-      --light-color: #f9f5f0;
-      --dark-color: #3a2c1e;
-      --text-color: #333;
-      --border-radius: 12px;
-      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-      --transition: all 0.3s ease;
+    :root{
+      --primary:#8b5a2b; --secondary:#d4a574; --light:#f9f5f0; --dark:#3a2c1e;
+      --radius:12px; --shadow:0 5px 15px rgba(0,0,0,0.08);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Tajawal', Arial, sans-serif;
-      background: linear-gradient(135deg, #f9f5f0 0%, #e8dfd3 100%);
-      color: var(--text-color);
-      padding: 20px;
-      line-height: 1.6;
-      min-height: 100vh;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Tajawal', Arial, sans-serif;
+      background: linear-gradient(135deg,#f9f5f0 0%,#e8dfd3 100%);
+      color:#222; padding:20px; min-height:100vh;
     }
-    .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      max-width: 800px;
-      margin: 20px auto;
+    .container{
+      max-width:900px; margin:20px auto; background:#fff; padding:28px;
+      border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;
     }
-    h1 {
-      text-align: center;
-      color: var(--primary-color);
-      margin-bottom: 25px;
-      font-weight: 700;
-      font-size: 2.2rem;
+    h1{ text-align:center; color:var(--primary); margin-bottom:18px; font-size:2rem; }
+    .product-header{ display:flex; gap:20px; align-items:center; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+    .product-image{
+      max-width:320px; width:100%; height:auto; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
     }
-    .product-header { text-align: center; margin-bottom: 30px; }
-    .product-header h2 { color: var(--dark-color); margin-bottom: 15px; font-size: 1.8rem; }
-    .product-image {
-      max-width: 100%;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+    .product-title{ text-align:center; }
+    .product-title h2{ font-size:1.6rem; color:var(--dark); margin-bottom:8px; }
+    .meta-row{ display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:6px; color:#555; }
+    .meta-pill{ background:var(--light); padding:8px 12px; border-radius:20px; border-right:3px solid var(--secondary); font-weight:600; }
+
+    .product-details-grid{
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-top:18px;
     }
-    .product-details-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+    .detail-item{
+      background: #fbf7f3; padding:14px; border-radius:12px; display:flex; gap:12px; align-items:flex-start;
+      border-right: 4px solid var(--secondary);
     }
-    .detail-item {
-      display: flex;
-      align-items: flex-start;
-      padding: 15px;
-      background: var(--light-color);
-      border-radius: var(--border-radius);
-      border-right: 3px solid var(--secondary-color);
-    }
-    .detail-icon { font-size: 1.5rem; margin-left: 10px; }
-    .detail-content { display: flex; flex-direction: column; }
-    .detail-label { font-weight: 700; color: var(--primary-color); }
-    .detail-value { color: var(--dark-color); }
+    .detail-icon{ font-size:1.4rem; margin-left:6px; }
+    .detail-label{ font-weight:700; color:var(--primary); margin-bottom:6px; display:block; }
+    .detail-value{ color:var(--dark); }
+
+    .bottom-row{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin-top:22px; flex-wrap:wrap; }
+    .qr-box{ text-align:center; }
+    .qr-box img{ width:160px; height:160px; border:1px solid #e0d7cc; border-radius:8px; background:white; }
+    .actions{ text-align:center; }
+    .btn{ display:inline-block; padding:10px 16px; border-radius:10px; background:var(--primary); color:#fff; text-decoration:none; font-weight:600; box-shadow:0 4px 12px rgba(139,90,43,0.2); }
+    .btn:hover{ transform:translateY(-2px); }
+
+    .error-message{ padding:18px; border-radius:10px; background:#ffeaea; color:#d32f2f; border-right:4px solid #d32f2f; text-align:center; }
 
     /* زر الطباعة */
-    .print-btn {
-      display: block;
-      margin: 20px auto;
-      padding: 12px 25px;
-      background: var(--primary-color);
-      color: #fff;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .print-btn:hover { background: var(--accent-color); }
+    .print-btn{ display:inline-block; margin:10px auto 0; padding:10px 20px; background:var(--primary); color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; }
 
-    /* إعدادات الطباعة */
+    /* إعدادات الطباعة على A4 */
     @media print {
-      body { background: #fff; padding: 0; }
-      .container {
-        box-shadow: none;
-        margin: 0;
-        width: 210mm;   /* A4 عرض */
-        min-height: 297mm; /* A4 طول */
-        padding: 20mm;
-        page-break-after: auto;
+      body{ background:#fff; padding:0; }
+      .print-btn{ display:none !important; }
+      .container{
+        margin:0; box-shadow:none; border-radius:0; padding:20mm;
+        width:210mm; min-height:297mm; /* A4 */
       }
-      .print-btn { display: none; } /* إخفاء زر الطباعة عند الطباعة */
+      .product-details-grid{ gap:12px; }
+      .qr-box img{ width:140px; height:140px; }
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:720px){
+      .product-header{ flex-direction:column; }
+      .product-image{ max-width:100%; }
+      .qr-box img{ width:120px; height:120px; }
     }
   </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 تفاصيل المنتج</h1>
+
+    <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
+
+    <div style="text-align:center;">
+      <button class="print-btn" onclick="window.print()">🖨️ طباعة (A4)</button>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // ----- لا تغيّر هذا الجزء (الإعدادات الخاصة بمشروعك) -----
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
       authDomain: "artisanat-161f3.firebaseapp.com",
@@ -110,6 +103,7 @@
       appId: "1:203989144161:web:88273bf2b917ddc0a65020",
       measurementId: "G-9350J62Z5H"
     };
+    // ---------------------------------------------------------
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -118,49 +112,153 @@
     const productId = params.get("id");
     const container = document.getElementById("productDetails");
 
-    async function loadProduct() {
-      if (!productId) {
-        container.innerHTML = "<p>❌ لم يتم تمرير معرف المنتج.</p>";
-        return;
-      }
+    function formatTimestamp(ts) {
+      // يدعم كل من Date وسجل Firestore Timestamp
+      if (!ts) return "-";
       try {
-        const docRef = doc(db, "products", productId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          container.innerHTML = `
-            <div class="product-header">
-              <h2>${data.name || "منتج بدون اسم"}</h2>
-              <img src="${data.image || ""}" alt="صورة المنتج" class="product-image">
-            </div>
-            <div class="product-details-grid">
-              <div class="detail-item"><span class="detail-icon">💰</span>
-                <div class="detail-content"><span class="detail-label">السعر</span><span class="detail-value">${data.price || "-"}</span></div>
-              </div>
-              <div class="detail-item"><span class="detail-icon">📏</span>
-                <div class="detail-content"><span class="detail-label">الحجم</span><span class="detail-value">${data.size || "-"}</span></div>
-              </div>
-              <div class="detail-item"><span class="detail-icon">📅</span>
-                <div class="detail-content"><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">${data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString() : "-"}</span></div>
-              </div>
-            </div>
-          `;
-        } else {
-          container.innerHTML = "<p>❌ المنتج غير موجود.</p>";
-        }
-      } catch (error) {
-        console.error("خطأ:", error);
-        container.innerHTML = "<p>⚠️ خطأ في تحميل المنتج.</p>";
+        if (typeof ts.toDate === 'function') return ts.toDate().toLocaleString();
+        if (ts instanceof Date) return ts.toLocaleString();
+        return String(ts);
+      } catch (e) {
+        return String(ts);
       }
     }
+
+    async function loadProduct() {
+      if (!productId) {
+        container.innerHTML = `<div class="error-message">❌ لم يتم تمرير معرف المنتج في الرابط.</div>`;
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "products", productId);
+        const snap = await getDoc(docRef);
+
+        if (!snap.exists()) {
+          container.innerHTML = `<div class="error-message">❌ المنتج غير موجود.</div>`;
+          return;
+        }
+
+        const data = snap.data();
+
+        // رابط العرض (نستخدم الرابط الثابت للموقع كما طلبت)
+        const viewUrl = `https://meliknour.github.io/artisanat/view.html?id=${productId}`;
+        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(viewUrl)}`;
+
+        // صورة المنتج (عرض بدلية إذا لم توجد)
+        const productImage = data.image ? data.image : "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
+          `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='#f3ece6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#b8a090' font-size='22'>لا توجد صورة</text></svg>`
+        );
+
+        // HTML الناتج
+        container.innerHTML = `
+          <div class="product-header">
+            <div class="product-title">
+              <h2>${escapeHtml(data.name || "منتج بدون اسم")}</h2>
+              <div class="meta-row">
+                <span class="meta-pill">المعرف: ${escapeHtml(productId)}</span>
+                <span class="meta-pill">النوع: ${escapeHtml(data.type || "-")}</span>
+                <span class="meta-pill">السعر: ${escapeHtml(data.price || "-")}</span>
+              </div>
+            </div>
+
+            <div>
+              <img src="${productImage}" alt="صورة المنتج" class="product-image">
+            </div>
+          </div>
+
+          <div class="product-details-grid">
+            <div class="detail-item"><span class="detail-icon">⏱️</span>
+              <div><span class="detail-label">مدة الإنجاز</span><span class="detail-value">${escapeHtml(data.duration || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">📏</span>
+              <div><span class="detail-label">الحجم</span><span class="detail-value">${escapeHtml(data.size || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">⚖️</span>
+              <div><span class="detail-label">الوزن</span><span class="detail-value">${escapeHtml(data.weight || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🔧</span>
+              <div><span class="detail-label">الاستعمال</span><span class="detail-value">${escapeHtml(data.usage || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🎨</span>
+              <div><span class="detail-label">الألوان</span><span class="detail-value">${escapeHtml(data.colors || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">✨</span>
+              <div><span class="detail-label">نوع التزيين والرموز</span><span class="detail-value">${escapeHtml(data.decoration || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🏭</span>
+              <div><span class="detail-label">الإنتاج</span><span class="detail-value">${escapeHtml(data.production || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">📍</span>
+              <div><span class="detail-label">المصدر</span><span class="detail-value">${escapeHtml(data.source || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">👥</span>
+              <div><span class="detail-label">عدد المتدخلين</span><span class="detail-value">${escapeHtml(data.people || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🧱</span>
+              <div><span class="detail-label">المواد الأولية</span><span class="detail-value">${escapeHtml(data.materials || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">📋</span>
+              <div><span class="detail-label">مراحل الإنجاز</span><span class="detail-value">${escapeHtml(data.steps || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🛠️</span>
+              <div><span class="detail-label">الأدوات المستعملة</span><span class="detail-value">${escapeHtml(data.tools || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">🔬</span>
+              <div><span class="detail-label">التقنيات المستعملة</span><span class="detail-value">${escapeHtml(data.techniques || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">💡</span>
+              <div><span class="detail-label">التقنيات المبتكرة</span><span class="detail-value">${escapeHtml(data.innovation || "-")}</span></div>
+            </div>
+
+            <div class="detail-item"><span class="detail-icon">📅</span>
+              <div><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">${formatTimestamp(data.timestamp)}</span></div>
+            </div>
+          </div>
+
+          <div class="bottom-row">
+            <div class="qr-box">
+              <div style="margin-bottom:8px;font-weight:700;color:var(--primary)">مسح رمز QR لفتح صفحة العرض</div>
+              <img src="${qrSrc}" alt="QR code">
+            </div>
+
+            <div class="actions">
+              <a class="btn" href="view.html?id=${encodeURIComponent(productId)}" target="_blank">فتح صفحة العرض</a>
+              <a class="btn" href="edit.html?id=${encodeURIComponent(productId)}" style="background:#f39c12;margin-left:10px;">تعديل المنتج</a>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="error-message">⚠️ حدث خطأ أثناء تحميل المنتج.</div>`;
+      }
+    }
+
+    // حماية بسيطة لمنع XSS عند إدخال نصوص من قاعدة البيانات
+    function escapeHtml(str){
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
     loadProduct();
   </script>
-</head>
-<body>
-  <div class="container">
-    <h1>📝 تفاصيل المنتج</h1>
-    <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
-    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
-  </div>
 </body>
 </html>
