@@ -2,39 +2,40 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>📋 قائمة المنتجات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قائمة المنتجات</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
-    table { width:100%; border-collapse:collapse; background:#fff; }
-    th, td { border:1px solid #ddd; padding:10px; text-align:center; }
-    th { background:#3a3b57; color:#fff; }
-    tr:hover { background:#f1f1f1; }
-    .loading { text-align:center; font-size:18px; }
-    a, button { margin:3px; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; }
-    .btn-edit { background:#4CAF50; color:#fff; }
-    .btn-delete { background:#E53935; color:#fff; }
-    .btn-view { background:#3a3b57; color:#fff; }
+    body {background:#eef2f7;font-family:Arial,sans-serif;padding:20px;}
+    h2{text-align:center;color:#333}
+    table{width:100%;border-collapse:collapse;margin-top:20px;background:white;border-radius:10px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,0.1);}
+    th,td{padding:12px;border-bottom:1px solid #ddd;text-align:center;}
+    th{background:#0056b3;color:white;}
+    tr:hover{background:#f1f1f1}
+    a{color:#0056b3;text-decoration:none;font-weight:bold}
+    .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
   </style>
 </head>
 <body>
   <h2>📋 قائمة المنتجات</h2>
   <div id="loading" class="loading">⏳ جارٍ تحميل البيانات...</div>
-  <table id="productsTable" style="display:none;">
+  <table id="productsTable" style="display:none">
     <thead>
       <tr>
         <th>اسم المنتج</th>
         <th>المعرف (ID)</th>
         <th>الرابط</th>
-        <th>الإجراءات</th>
+        <th>QR</th>
+        <th>إجراءات</th>
       </tr>
     </thead>
-    <tbody id="productsList"></tbody>
+    <tbody id="productsBody"></tbody>
   </table>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
@@ -49,47 +50,31 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const table = document.getElementById("productsTable");
-    const list = document.getElementById("productsList");
+    const tbody = document.getElementById("productsBody");
     const loading = document.getElementById("loading");
+    const table = document.getElementById("productsTable");
 
     async function loadProducts() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "products"));
-        loading.style.display = "none";
-        table.style.display = "table";
+      const querySnapshot = await getDocs(collection(db, "products"));
+      loading.style.display = "none";
+      table.style.display = "table";
 
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const row = document.createElement("tr");
-
-          row.innerHTML = `
-            <td>${data.name || "-"}</td>
-            <td>${data.id}</td>
-            <td><a href="edit.html?id=${data.id}" target="_blank">🔗 الرابط</a></td>
-            <td>
-              <a class="btn-view" href="view.html?id=${data.id}" target="_blank">👁 عرض</a>
-              <a class="btn-edit" href="edit.html?id=${data.id}" target="_blank">✏ تعديل</a>
-              <button class="btn-delete" data-id="${data.id}">🗑 حذف</button>
-            </td>
-          `;
-          list.appendChild(row);
-        });
-
-        // تفعيل الحذف
-        document.querySelectorAll(".btn-delete").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            if (confirm("هل أنت متأكد من الحذف؟")) {
-              await deleteDoc(doc(db, "products", id));
-              location.reload();
-            }
-          });
-        });
-
-      } catch (err) {
-        loading.innerText = "❌ فشل تحميل البيانات: " + err.message;
-      }
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.name || "بدون اسم"}</td>
+          <td>${docSnap.id}</td>
+          <td><a href="edit.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
+          <td><a href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://meliknour.github.io/artisanat/edit.html?id=${docSnap.id}" target="_blank">📷 QR</a></td>
+          <td>
+            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
+            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
+            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     loadProducts();
