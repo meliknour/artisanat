@@ -25,8 +25,8 @@
       font-family: 'Tajawal', 'Calibri', Arial, sans-serif;
       background-color: #e5e5e5;
       color: var(--text-color);
-      padding: 30px 10px;
-      line-height: 1.6;
+      padding: 20px 10px;
+      line-height: 1.4;
     }
 
     /* محاكاة صفحة Word A4 */
@@ -35,7 +35,7 @@
       width: 100%;
       max-width: 800px;
       margin: 0 auto;
-      padding: 45px 50px;
+      padding: 30px 40px;
       border: 1px solid #ccc;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
       position: relative;
@@ -44,36 +44,36 @@
     /* هيدر المستند */
     .document-header {
       border-bottom: 2px solid var(--border-color);
-      padding-bottom: 12px;
-      margin-bottom: 25px;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
     }
 
     .document-title {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #000;
       text-transform: uppercase;
     }
 
     .doc-number {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       border: 1px solid var(--border-color);
-      padding: 3px 12px;
+      padding: 2px 10px;
       background-color: var(--bg-header);
     }
 
     /* قسم الصورة والعنوان الرئيسي */
     .product-top-section {
       display: flex;
-      gap: 25px;
+      gap: 20px;
       align-items: center;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
       border: 1px solid var(--border-color);
-      padding: 15px;
+      padding: 10px 15px;
       background: var(--bg-light);
     }
 
@@ -82,16 +82,16 @@
     }
 
     .product-image {
-      width: 160px;
-      height: 160px;
+      width: 120px;
+      height: 120px;
       object-fit: cover;
       border: 1px solid var(--border-color);
-      filter: grayscale(100%); /* تحويل الصورة للون أبيض وأسود لتناسب الثيم */
+      filter: grayscale(100%);
       transition: filter 0.3s;
     }
 
     .product-image:hover {
-      filter: grayscale(0%); /* تظهر الألوان الأصلية عند تحريك الماوس فوقها */
+      filter: grayscale(0%);
     }
 
     .product-title-main {
@@ -99,31 +99,35 @@
     }
 
     .product-title-main h2 {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
+      font-size: 1.3rem;
+      margin-bottom: 5px;
       border-bottom: 1px solid #888;
-      padding-bottom: 5px;
+      padding-bottom: 3px;
+    }
+
+    .product-title-main p {
+      font-size: 0.9rem;
     }
 
     /* جدول التفاصيل بتنسيق Word */
     .word-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 25px;
-      font-size: 0.95rem;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
     }
 
     .word-table th, 
     .word-table td {
       border: 1px solid var(--border-color);
-      padding: 8px 12px;
+      padding: 5px 8px;
       text-align: right;
-      vertical-align: top;
+      vertical-align: middle;
     }
 
     .word-table th {
       background-color: var(--bg-header);
-      width: 25%;
+      width: 22%;
       font-weight: 700;
     }
 
@@ -132,11 +136,11 @@
     }
 
     .section-heading {
-      background-color: #333 !important;
+      background-color: #222 !important;
       color: #fff !important;
       text-align: center !important;
-      font-size: 1rem;
-      padding: 6px !important;
+      font-size: 0.92rem;
+      padding: 4px !important;
     }
 
     /* أزرار الإجراءات */
@@ -144,7 +148,7 @@
       display: flex;
       justify-content: center;
       gap: 15px;
-      margin-top: 30px;
+      margin-top: 20px;
     }
 
     .btn {
@@ -165,7 +169,6 @@
       color: #fff;
     }
 
-    /* رسائل الخطأ */
     .error-message {
       text-align: center;
       padding: 20px;
@@ -174,29 +177,73 @@
       font-weight: bold;
     }
 
-    /* إعدادات الطباعة للوصول للنتيجة المثالية */
+    /* ========================================== */
+    /* 🖨️ إعدادات الطباعة الدقيقة (صفحة واحدة A4) */
+    /* ========================================== */
     @media print {
-      body {
-        background: none;
-        padding: 0;
+      @page {
+        size: A4 portrait;
+        margin: 0.8cm; /* تقليل الهوامش الخارجية لمنع التجاوز */
       }
+      
+      html, body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 11pt;
+      }
+
       .word-page {
-        border: none;
-        box-shadow: none;
-        padding: 0;
-        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
       }
+
       .action-buttons {
-        display: none;
+        display: none !important; /* إخفاء الأزرار أثناء الطباعة */
       }
+
       .product-image {
         filter: grayscale(100%) !important;
+        width: 100px !important;
+        height: 100px !important;
+      }
+
+      .document-header {
+        margin-bottom: 10px !important;
+        padding-bottom: 4px !important;
+      }
+
+      .document-title {
+        font-size: 1.3rem !important;
+      }
+
+      .product-top-section {
+        padding: 8px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .word-table {
+        margin-bottom: 8px !important;
+        font-size: 9pt !important; /* تصغير خط الجداول للطباعة ليتناسب مع الصفحة */
+      }
+
+      .word-table th, 
+      .word-table td {
+        padding: 3px 6px !important; /* تقليل ارتفاع الصفوف */
+      }
+
+      .section-heading {
+        padding: 2px !important;
       }
     }
 
     @media (max-width: 650px) {
       .word-page {
-        padding: 20px;
+        padding: 15px;
       }
       .product-top-section {
         flex-direction: column;
@@ -266,7 +313,7 @@
     }
 
     function val(value) {
-      return (value && value.trim() !== "") ? value : "-";
+      return (value && String(value).trim() !== "") ? value : "-";
     }
 
     async function loadProduct() {
@@ -293,7 +340,7 @@
 
         if (productData) {
             productNumberElement.textContent = formatProductId(productIndex);
-            const fallbackImg = "https://via.placeholder.com/160?text=No+Image";
+            const fallbackImg = "https://via.placeholder.com/120?text=No+Image";
             const imageUrl = productData.image || fallbackImg;
 
             container.innerHTML = `
