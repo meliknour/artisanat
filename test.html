@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بطاقة وصف منتج - مستند</title>
+  <title>بطاقة الوصف الفني للمنتج</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,8 +11,8 @@
     :root {
       --text-color: #000000;
       --border-color: #000000;
-      --bg-light: #f9f9f9;
-      --bg-header: #f0f0f0;
+      --bg-light: #ffffff;
+      --bg-header: #1a1a1a;
     }
 
     * {
@@ -29,7 +29,7 @@
       line-height: 1.4;
     }
 
-    /* محاكاة صفحة Word A4 */
+    /* صفحة المستند */
     .word-page {
       background: #ffffff;
       width: 100%;
@@ -55,7 +55,6 @@
       font-size: 1.6rem;
       font-weight: 700;
       color: #000;
-      text-transform: uppercase;
     }
 
     .doc-number {
@@ -63,7 +62,7 @@
       font-weight: 700;
       border: 1px solid var(--border-color);
       padding: 2px 10px;
-      background-color: var(--bg-header);
+      background-color: #fff;
     }
 
     /* قسم الصورة والعنوان الرئيسي */
@@ -73,25 +72,21 @@
       align-items: center;
       margin-bottom: 15px;
       border: 1px solid var(--border-color);
-      padding: 10px 15px;
-      background: var(--bg-light);
+      padding: 12px 15px;
+      background: #fff;
     }
 
     .product-image-container {
       flex-shrink: 0;
     }
 
+    /* الصورة تظهر بالألوان الطبيعية في الموقع */
     .product-image {
-      width: 120px;
-      height: 120px;
+      width: 130px;
+      height: 130px;
       object-fit: cover;
       border: 1px solid var(--border-color);
-      filter: grayscale(100%);
-      transition: filter 0.3s;
-    }
-
-    .product-image:hover {
-      filter: grayscale(0%);
+      filter: none; /* ألوان طبيعية */
     }
 
     .product-title-main {
@@ -99,35 +94,37 @@
     }
 
     .product-title-main h2 {
-      font-size: 1.3rem;
-      margin-bottom: 5px;
-      border-bottom: 1px solid #888;
-      padding-bottom: 3px;
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 4px;
     }
 
     .product-title-main p {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      margin-bottom: 3px;
     }
 
-    /* جدول التفاصيل بتنسيق Word */
+    /* جدول التفاصيل */
     .word-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 12px;
-      font-size: 0.88rem;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      table-layout: fixed;
     }
 
     .word-table th, 
     .word-table td {
       border: 1px solid var(--border-color);
-      padding: 5px 8px;
+      padding: 6px 10px;
       text-align: right;
       vertical-align: middle;
+      word-wrap: break-word;
     }
 
     .word-table th {
-      background-color: var(--bg-header);
-      width: 22%;
+      background-color: #fff;
       font-weight: 700;
     }
 
@@ -135,12 +132,14 @@
       background-color: #fff;
     }
 
+    /* العناوين السوداء المظللة */
     .section-heading {
-      background-color: #222 !important;
-      color: #fff !important;
+      background-color: var(--bg-header) !important;
+      color: #ffffff !important;
       text-align: center !important;
-      font-size: 0.92rem;
-      padding: 4px !important;
+      font-size: 0.95rem;
+      padding: 6px !important;
+      font-weight: bold;
     }
 
     /* أزرار الإجراءات */
@@ -178,19 +177,20 @@
     }
 
     /* ========================================== */
-    /* 🖨️ إعدادات الطباعة الدقيقة (صفحة واحدة A4) */
+    /* 🖨️ إعدادات الطباعة الدقيقة للحفاظ على الشكل */
     /* ========================================== */
     @media print {
       @page {
         size: A4 portrait;
-        margin: 0.8cm; /* تقليل الهوامش الخارجية لمنع التجاوز */
+        margin: 0.6cm;
       }
       
       html, body {
         background: #fff !important;
         padding: 0 !important;
         margin: 0 !important;
-        font-size: 11pt;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .word-page {
@@ -203,58 +203,50 @@
       }
 
       .action-buttons {
-        display: none !important; /* إخفاء الأزرار أثناء الطباعة */
+        display: none !important;
       }
 
+      /* تحويل الصورة إلى أبيض وأسود فقط عند الطباعة */
       .product-image {
         filter: grayscale(100%) !important;
-        width: 100px !important;
-        height: 100px !important;
+        width: 110px !important;
+        height: 110px !important;
       }
 
-      .document-header {
-        margin-bottom: 10px !important;
-        padding-bottom: 4px !important;
-      }
-
-      .document-title {
-        font-size: 1.3rem !important;
-      }
-
-      .product-top-section {
-        padding: 8px !important;
-        margin-bottom: 10px !important;
-      }
-
+      /* إجبار الجداول على الحفاظ على شكل الأعمدة بدون تفكك */
       .word-table {
-        margin-bottom: 8px !important;
-        font-size: 9pt !important; /* تصغير خط الجداول للطباعة ليتناسب مع الصفحة */
+        display: table !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+        margin-bottom: 10px !important;
+        font-size: 8.5pt !important;
+      }
+
+      .word-table tr {
+        display: table-row !important;
       }
 
       .word-table th, 
       .word-table td {
-        padding: 3px 6px !important; /* تقليل ارتفاع الصفوف */
+        display: table-cell !important;
+        padding: 4px 6px !important;
+        border: 1px solid #000 !important;
       }
 
+      /* تثبيت ألوان الخلفية للرؤوس سوداء أثناء الطباعة */
       .section-heading {
-        padding: 2px !important;
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
-    }
 
-    @media (max-width: 650px) {
-      .word-page {
-        padding: 15px;
-      }
       .product-top-section {
-        flex-direction: column;
-        text-align: center;
-      }
-      .word-table th, .word-table td {
-        display: block;
-        width: 100%;
-      }
-      .word-table th {
-        background-color: #e0e0e0;
+        display: flex !important;
+        flex-direction: row !important;
+        padding: 8px !important;
+        margin-bottom: 10px !important;
+        border: 1px solid #000 !important;
       }
     }
   </style>
@@ -264,7 +256,7 @@
   <div class="word-page">
     <!-- هيدر المستند -->
     <div class="document-header">
-      <div class="document-title">📄 بطاقة الوصف الفني للمنتج</div>
+      <div class="document-title">بطاقة الوصف الفني للمنتج</div>
       <div class="doc-number">الرقم المرجعي: <span id="productNumber">---</span></div>
     </div>
 
@@ -340,89 +332,97 @@
 
         if (productData) {
             productNumberElement.textContent = formatProductId(productIndex);
-            const fallbackImg = "https://via.placeholder.com/120?text=No+Image";
+            const fallbackImg = "https://via.placeholder.com/130?text=No+Image";
             const imageUrl = productData.image || fallbackImg;
 
             container.innerHTML = `
               <!-- الجزء العلوي: الصورة والعنوان -->
               <div class="product-top-section">
+                <div class="product-title-main">
+                  <h2>${val(productData.name)}</h2>
+                  <p><strong>النوع / التصنيف:</strong> ${val(productData.type)}</p>
+                  <p><strong>المصدر / المنطقة:</strong> ${val(productData.source)}</p>
+                </div>
                 <div class="product-image-container">
                   <img src="${imageUrl}" 
                        alt="صورة المنتج" 
                        class="product-image" 
                        onerror="this.onerror=null;this.src='${fallbackImg}';">
                 </div>
-                <div class="product-title-main">
-                  <h2>${val(productData.name)}</h2>
-                  <p><strong>النوع / التصنيف:</strong> ${val(productData.type)}</p>
-                  <p><strong>المصدر / المنطقة:</strong> ${val(productData.source)}</p>
-                </div>
               </div>
 
-              <!-- جدول البيانات الأساسية -->
+              <!-- جدول المواصفات العامة والمالية -->
               <table class="word-table">
-                <tr>
-                  <th colspan="4" class="section-heading">المواصفات العامة والمالية</th>
-                </tr>
-                <tr>
-                  <th>السعر</th>
-                  <td>${val(productData.price)}</td>
-                  <th>مدة الإنجاز</th>
-                  <td>${val(productData.duration)}</td>
-                </tr>
-                <tr>
-                  <th>الحجم</th>
-                  <td>${val(productData.size)}</td>
-                  <th>الوزن</th>
-                  <td>${val(productData.weight)}</td>
-                </tr>
-                <tr>
-                  <th>الألوان</th>
-                  <td>${val(productData.colors)}</td>
-                  <th>الإنتاج</th>
-                  <td>${val(productData.production)}</td>
-                </tr>
-                <tr>
-                  <th>الاستعمال</th>
-                  <td>${val(productData.usage)}</td>
-                  <th>عدد المتدخلين</th>
-                  <td>${val(productData.people)}</td>
-                </tr>
+                <thead>
+                  <tr>
+                    <th colspan="4" class="section-heading">المواصفات العامة والمالية</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th style="width:20%;">السعر</th>
+                    <td style="width:30%;">${val(productData.price)}</td>
+                    <th style="width:20%;">مدة الإنجاز</th>
+                    <td style="width:30%;">${val(productData.duration)}</td>
+                  </tr>
+                  <tr>
+                    <th>الحجم</th>
+                    <td>${val(productData.size)}</td>
+                    <th>الوزن</th>
+                    <td>${val(productData.weight)}</td>
+                  </tr>
+                  <tr>
+                    <th>الألوان</th>
+                    <td>${val(productData.colors)}</td>
+                    <th>الإنتاج</th>
+                    <td>${val(productData.production)}</td>
+                  </tr>
+                  <tr>
+                    <th>الاستعمال</th>
+                    <td>${val(productData.usage)}</td>
+                    <th>عدد المتدخلين</th>
+                    <td>${val(productData.people)}</td>
+                  </tr>
+                </tbody>
               </table>
 
-              <!-- جدول التقييم الفني والإنتاجي -->
+              <!-- جدول التفاصيل الفنية ومراحل العمل -->
               <table class="word-table">
-                <tr>
-                  <th colspan="2" class="section-heading">التفاصيل الفنية ومراحل العمل</th>
-                </tr>
-                <tr>
-                  <th>نوع التزيين والرموز</th>
-                  <td>${val(productData.decoration)}</td>
-                </tr>
-                <tr>
-                  <th>المواد الأولية</th>
-                  <td>${val(productData.materials)}</td>
-                </tr>
-                <tr>
-                  <th>الأدوات المستعملة</th>
-                  <td>${val(productData.tools)}</td>
-                </tr>
-                <tr>
-                  <th>التقنيات المستعملة</th>
-                  <td>${val(productData.techniques)}</td>
-                </tr>
-                <tr>
-                  <th>التقنيات المبتكرة</th>
-                  <td>${val(productData.innovation)}</td>
-                </tr>
-                <tr>
-                  <th>مراحل الإنجاز</th>
-                  <td>${val(productData.steps)}</td>
-                </tr>
-                <tr>
-                  <th>تاريخ الإضافة</th>
-                  <td>${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString('ar-DZ') : "-"}</td>
-                </tr>
+                <thead>
+                  <tr>
+                    <th colspan="2" class="section-heading">التفاصيل الفنية ومراحل العمل</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th style="width:25%;">نوع التزيين والرموز</th>
+                    <td style="width:75%;">${val(productData.decoration)}</td>
+                  </tr>
+                  <tr>
+                    <th>المواد الأولية</th>
+                    <td>${val(productData.materials)}</td>
+                  </tr>
+                  <tr>
+                    <th>الأدوات المستعملة</th>
+                    <td>${val(productData.tools)}</td>
+                  </tr>
+                  <tr>
+                    <th>التقنيات المستعملة</th>
+                    <td>${val(productData.techniques)}</td>
+                  </tr>
+                  <tr>
+                    <th>التقنيات المبتكرة</th>
+                    <td>${val(productData.innovation)}</td>
+                  </tr>
+                  <tr>
+                    <th>مراحل الإنجاز</th>
+                    <td>${val(productData.steps)}</td>
+                  </tr>
+                  <tr>
+                    <th>تاريخ الإضافة</th>
+                    <td>${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString('ar-DZ') : "-"}</td>
+                  </tr>
+                </tbody>
               </table>
             `;
 
