@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بطاقة وصف منتج - مستند</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-color: #000000;
+      --border-color: #000000;
+      --bg-light: #f9f9f9;
+      --bg-header: #f0f0f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Tajawal', 'Calibri', Arial, sans-serif;
+      background-color: #e5e5e5;
+      color: var(--text-color);
+      padding: 30px 10px;
+      line-height: 1.6;
+    }
+
+    /* محاكاة صفحة Word A4 */
+    .word-page {
+      background: #ffffff;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 45px 50px;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      position: relative;
+    }
+
+    /* هيدر المستند */
+    .document-header {
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .document-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .doc-number {
+      font-size: 1rem;
+      font-weight: 700;
+      border: 1px solid var(--border-color);
+      padding: 3px 12px;
+      background-color: var(--bg-header);
+    }
+
+    /* قسم الصورة والعنوان الرئيسي */
+    .product-top-section {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+      margin-bottom: 25px;
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      background: var(--bg-light);
+    }
+
+    .product-image-container {
+      flex-shrink: 0;
+    }
+
+    .product-image {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      filter: grayscale(100%); /* تحويل الصورة للون أبيض وأسود لتناسب الثيم */
+      transition: filter 0.3s;
+    }
+
+    .product-image:hover {
+      filter: grayscale(0%); /* تظهر الألوان الأصلية عند تحريك الماوس فوقها */
+    }
+
+    .product-title-main {
+      flex-grow: 1;
+    }
+
+    .product-title-main h2 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #888;
+      padding-bottom: 5px;
+    }
+
+    /* جدول التفاصيل بتنسيق Word */
+    .word-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+
+    .word-table th, 
+    .word-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    .word-table th {
+      background-color: var(--bg-header);
+      width: 25%;
+      font-weight: 700;
+    }
+
+    .word-table td {
+      background-color: #fff;
+    }
+
+    .section-heading {
+      background-color: #333 !important;
+      color: #fff !important;
+      text-align: center !important;
+      font-size: 1rem;
+      padding: 6px !important;
+    }
+
+    /* أزرار الإجراءات */
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #000;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    /* رسائل الخطأ */
+    .error-message {
+      text-align: center;
+      padding: 20px;
+      border: 1px solid #000;
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+
+    /* إعدادات الطباعة للوصول للنتيجة المثالية */
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .word-page {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+      }
+      .action-buttons {
+        display: none;
+      }
+      .product-image {
+        filter: grayscale(100%) !important;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .word-page {
+        padding: 20px;
+      }
+      .product-top-section {
+        flex-direction: column;
+        text-align: center;
+      }
+      .word-table th, .word-table td {
+        display: block;
+        width: 100%;
+      }
+      .word-table th {
+        background-color: #e0e0e0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="word-page">
+    <!-- هيدر المستند -->
+    <div class="document-header">
+      <div class="document-title">📄 بطاقة الوصف الفني للمنتج</div>
+      <div class="doc-number">الرقم المرجعي: <span id="productNumber">---</span></div>
+    </div>
+
+    <!-- محتوى المنتج -->
+    <div id="productDetails">⏳ جاري تحميل بيانات المستند...</div>
+
+    <!-- الأزرار -->
+    <div class="action-buttons">
+      <a href="javascript:history.back()" class="btn">← العودة</a>
+      <button onclick="window.print()" class="btn">🖨️ طباعة المستند</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      getDocs, 
+      query, 
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+
+    const container = document.getElementById("productDetails");
+    const productNumberElement = document.getElementById("productNumber");
+
+    function formatProductId(index) {
+      if (typeof index !== 'number' || index < 1) return "---";
+      return String(index).padStart(3, '0');
+    }
+
+    function val(value) {
+      return (value && value.trim() !== "") ? value : "-";
+    }
+
+    async function loadProduct() {
+      if (!productId) {
+        productNumberElement.textContent = "---";
+        container.innerHTML = "<p class='error-message'>لم يتم تحديد معرف المنتج.</p>";
+        return;
+      }
+
+      try {
+        const productsCollection = collection(db, "products");
+        const q = query(productsCollection, orderBy("timestamp", "asc")); 
+        const querySnapshot = await getDocs(q);
+
+        let productData = null;
+        let productIndex = -1;
+        
+        querySnapshot.docs.forEach((doc, index) => {
+            if (doc.id === productId) {
+                productData = doc.data();
+                productIndex = index + 1; 
+            }
+        });
+
+        if (productData) {
+            productNumberElement.textContent = formatProductId(productIndex);
+            const fallbackImg = "https://via.placeholder.com/160?text=No+Image";
+            const imageUrl = productData.image || fallbackImg;
+
+            container.innerHTML = `
+              <!-- الجزء العلوي: الصورة والعنوان -->
+              <div class="product-top-section">
+                <div class="product-image-container">
+                  <img src="${imageUrl}" 
+                       alt="صورة المنتج" 
+                       class="product-image" 
+                       onerror="this.onerror=null;this.src='${fallbackImg}';">
+                </div>
+                <div class="product-title-main">
+                  <h2>${val(productData.name)}</h2>
+                  <p><strong>النوع / التصنيف:</strong> ${val(productData.type)}</p>
+                  <p><strong>المصدر / المنطقة:</strong> ${val(productData.source)}</p>
+                </div>
+              </div>
+
+              <!-- جدول البيانات الأساسية -->
+              <table class="word-table">
+                <tr>
+                  <th colspan="4" class="section-heading">المواصفات العامة والمالية</th>
+                </tr>
+                <tr>
+                  <th>السعر</th>
+                  <td>${val(productData.price)}</td>
+                  <th>مدة الإنجاز</th>
+                  <td>${val(productData.duration)}</td>
+                </tr>
+                <tr>
+                  <th>الحجم</th>
+                  <td>${val(productData.size)}</td>
+                  <th>الوزن</th>
+                  <td>${val(productData.weight)}</td>
+                </tr>
+                <tr>
+                  <th>الألوان</th>
+                  <td>${val(productData.colors)}</td>
+                  <th>الإنتاج</th>
+                  <td>${val(productData.production)}</td>
+                </tr>
+                <tr>
+                  <th>الاستعمال</th>
+                  <td>${val(productData.usage)}</td>
+                  <th>عدد المتدخلين</th>
+                  <td>${val(productData.people)}</td>
+                </tr>
+              </table>
+
+              <!-- جدول التقييم الفني والإنتاجي -->
+              <table class="word-table">
+                <tr>
+                  <th colspan="2" class="section-heading">التفاصيل الفنية ومراحل العمل</th>
+                </tr>
+                <tr>
+                  <th>نوع التزيين والرموز</th>
+                  <td>${val(productData.decoration)}</td>
+                </tr>
+                <tr>
+                  <th>المواد الأولية</th>
+                  <td>${val(productData.materials)}</td>
+                </tr>
+                <tr>
+                  <th>الأدوات المستعملة</th>
+                  <td>${val(productData.tools)}</td>
+                </tr>
+                <tr>
+                  <th>التقنيات المستعملة</th>
+                  <td>${val(productData.techniques)}</td>
+                </tr>
+                <tr>
+                  <th>التقنيات المبتكرة</th>
+                  <td>${val(productData.innovation)}</td>
+                </tr>
+                <tr>
+                  <th>مراحل الإنجاز</th>
+                  <td>${val(productData.steps)}</td>
+                </tr>
+                <tr>
+                  <th>تاريخ الإضافة</th>
+                  <td>${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString('ar-DZ') : "-"}</td>
+                </tr>
+              </table>
+            `;
+
+        } else {
+            productNumberElement.textContent = "---";
+            container.innerHTML = "<p class='error-message'>المنتج المطلوب غير موجود.</p>";
+        }
+      } catch (error) {
+        console.error("خطأ في جلب المنتج:", error);
+        productNumberElement.textContent = "خطأ";
+        container.innerHTML = "<p class='error-message'>حدث خطأ أثناء تحميل البيانات.</p>";
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
