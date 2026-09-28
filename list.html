@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>قائمة المنتجات</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <style>
     body {background:#eef2f7;font-family:Arial,sans-serif;padding:20px;}
     h2{text-align:center;color:#333}
@@ -15,6 +13,8 @@
     tr:hover{background:#f1f1f1}
     a{color:#0056b3;text-decoration:none;font-weight:bold}
     .loading{text-align:center;margin-top:30px;font-size:18px;color:#666}
+    .btn-delete {color: #d9534f; text-decoration: none; font-weight: bold; cursor: pointer;}
+    .btn-delete:hover {text-decoration: underline;}
   </style>
 </head>
 <body>
@@ -35,7 +35,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
@@ -54,27 +54,59 @@
     const loading = document.getElementById("loading");
     const table = document.getElementById("productsTable");
 
-    async function loadProducts() {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      loading.style.display = "none";
-      table.style.display = "table";
+    // دالة حذف المنتج من الفايربيس
+    async function deleteProduct(productId, rowElement) {
+      const confirmDelete = confirm("هل أنت متأكد من أنك تريد حذف هذا المنتج؟");
+      if (!confirmDelete) return;
 
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${data.name || "بدون اسم"}</td>
-          <td>${docSnap.id}</td>
-          <td><a href="edit.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
-          <td><a href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://meliknour.github.io/artisanat/edit.html?id=${docSnap.id}" target="_blank">📷 QR</a></td>
-          <td>
-            <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
-            <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
-            <a href="#" onclick="alert('الحذف لاحقاً')">🗑 حذف</a>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      try {
+        const docRef = doc(db, "products", productId);
+        await deleteDoc(docRef);
+        alert("✅ تم حذف المنتج بنجاح!");
+        
+        // حذف الصف من الجدول فوراً دون الحاجة لإعادة تحميل الصفحة
+        rowElement.remove();
+      } catch (error) {
+        console.error("خطأ أثناء الحذف:", error);
+        alert("⚠️ حدث خطأ أثناء عملية الحذف.");
+      }
+    }
+
+    // جعل الدالة متاحة عالمياً لنتمكن من استدعائها داخل HTML
+    window.deleteProduct = deleteProduct;
+
+    async function loadProducts() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        loading.style.display = "none";
+        table.style.display = "table";
+
+        if (querySnapshot.empty) {
+          tbody.innerHTML = `<tr><td colspan="5">🚫 لا توجد منتجات حالياً.</td></tr>`;
+          return;
+        }
+
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const tr = document.createElement("tr");
+          tr.id = `row-${docSnap.id}`;
+          tr.innerHTML = `
+            <td>${data.name || "بدون اسم"}</td>
+            <td>${docSnap.id}</td>
+            <td><a href="edit.html?id=${docSnap.id}" target="_blank">🔗 الرابط</a></td>
+            <td><a href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://meliknour.github.io/artisanat/edit.html?id=${docSnap.id}" target="_blank">📷 QR</a></td>
+            <td>
+              <a href="view.html?id=${docSnap.id}">👁 عرض</a> | 
+              <a href="edit.html?id=${docSnap.id}">✏ تعديل</a> | 
+              <a href="javascript:void(0)" class="btn-delete" onclick="deleteProduct('${docSnap.id}', document.getElementById('row-${docSnap.id}'))">🗑 حذف</a>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error("خطأ في تحميل البيانات:", error);
+        loading.innerHTML = "❌ حدث خطأ أثناء تحميل البيانات.";
+      }
     }
 
     loadProducts();
