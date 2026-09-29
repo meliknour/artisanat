@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل المنتج</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #8b5a2b;
+      --secondary-color: #d4a574;
+      --accent-color: #a87c4f;
+      --light-color: #f9f5f0;
+      --dark-color: #3a2c1e;
+      --text-color: #333;
+      --border-radius: 12px;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Tajawal', Arial, sans-serif;
+      background: linear-gradient(135deg, #f9f5f0 0%, #e8dfd3 100%);
+      color: var(--text-color);
+      padding: 20px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      max-width: 800px;
+      margin: 20px auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 2.2rem;
+      position: relative;
+      padding-bottom: 15px;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 50%;
+      transform: translateX(50%);
+      width: 100px;
+      height: 3px;
+      background: var(--secondary-color);
+      border-radius: 3px;
+    }
+
+    .product-id {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      box-shadow: 0 3px 10px rgba(139, 90, 43, 0.3);
+      margin-top: 10px;
+    }
+
+    .product-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .product-header h2 {
+      color: var(--dark-color);
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+    }
+
+    .product-image {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+      margin-top: 15px;
+    }
+
+    .product-image:hover {
+      transform: scale(1.05);
+    }
+
+    .product-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: var(--light-color);
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      border-right: 3px solid var(--secondary-color);
+      min-height: 70px;
+    }
+
+    .detail-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-icon {
+      font-size: 1.4rem;
+      margin-left: 12px;
+      flex-shrink: 0;
+    }
+
+    .detail-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .detail-label {
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 2px;
+      font-size: 0.85rem;
+    }
+
+    .detail-value {
+      color: var(--dark-color);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .action-buttons {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .btn-back {
+      display: inline-block;
+      padding: 12px 25px;
+      background: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      transition: var(--transition);
+      box-shadow: 0 3px 10px rgba(139, 90, 43, 0.3);
+    }
+
+    .btn-back:hover {
+      background: var(--accent-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(139, 90, 43, 0.4);
+    }
+
+    .error-message {
+      text-align: center;
+      padding: 20px;
+      background: #ffeaea;
+      border-radius: var(--border-radius);
+      color: #d32f2f;
+      border-right: 3px solid #d32f2f;
+    }
+
+    #productDetails {
+      transition: var(--transition);
+    }
+
+    /* تحسينات للشاشات الصغيرة */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .product-details-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .product-image {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .detail-item {
+        padding: 10px 12px;
+        min-height: 65px;
+      }
+      
+      .detail-icon {
+        font-size: 1.3rem;
+        margin-left: 10px;
+      }
+    }
+
+    /* تأثيرات التحميل */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header, .product-header, .detail-item, .action-buttons {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .detail-item:nth-child(odd) {
+      animation-delay: 0.1s;
+    }
+
+    .detail-item:nth-child(even) {
+      animation-delay: 0.2s;
+    }
+
+    /* تنسيقات الطباعة المحسنة */
+    @media print {
+      @page {
+        size: A4;
+        margin: 1.5cm;
+      }
+      
+      body {
+        background: white !important;
+        padding: 0 !important;
+        font-size: 12pt;
+        line-height: 1.4;
+        color: #000 !important;
+      }
+      
+      .container {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        border: none !important;
+      }
+      
+      .container::before {
+        display: none !important;
+      }
+      
+      .page-header {
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #333 !important;
+        padding-bottom: 10px !important;
+      }
+      
+      h1 {
+        color: #000 !important;
+        font-size: 20pt !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 10px !important;
+      }
+      
+      h1::after {
+        display: none !important;
+      }
+      
+      .product-id {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        font-size: 11pt !important;
+        padding: 5px 15px !important;
+      }
+      
+      .product-header {
+        margin-bottom: 20px !important;
+        padding-bottom: 15px !important;
+      }
+      
+      .product-header h2 {
+        font-size: 16pt !important;
+        color: #000 !important;
+      }
+      
+      .product-image {
+        width: 120px !important;
+        height: 120px !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+      }
+      
+      .product-details-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 20px !important;
+        font-size: 10pt !important;
+      }
+      
+      .detail-item {
+        padding: 6px 8px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #f9f9f9 !important;
+        border: 1px solid #ddd !important;
+        border-right: 3px solid #8b5a2b !important;
+        margin-bottom: 5px !important;
+        min-height: 55px !important;
+      }
+      
+      .detail-item:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      
+      .detail-icon {
+        font-size: 1.1rem !important;
+        margin-left: 8px !important;
+      }
+      
+      .detail-label {
+        font-size: 9pt !important;
+        color: #000 !important;
+        margin-bottom: 1px !important;
+      }
+      
+      .detail-value {
+        font-size: 10pt !important;
+        color: #000 !important;
+        line-height: 1.3 !important;
+      }
+      
+      .btn-back, .action-buttons {
+        display: none !important;
+      }
+      
+      /* منع تقسيم العناصر بين الصفحات */
+      .product-header, .page-header {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      
+      /* تحسين التباعد للطباعة */
+      * {
+        margin-top: 0 !important;
+        margin-bottom: 5px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>📝 تفاصيل المنتج</h1>
+      <div class="product-id">رقم المنتج: <span id="productNumber">⏳ جاري التحميل...</span></div>
+    </div>
+    <div id="productDetails">⏳ جارٍ تحميل البيانات...</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      getDocs, 
+      query, 
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq-S2CBiNmccar_neNVg5T95XbwV6t0cY",
+      authDomain: "artisanat-161f3.firebaseapp.com",
+      projectId: "artisanat-161f3",
+      storageBucket: "artisanat-161f3.appspot.com",
+      messagingSenderId: "203989144161",
+      appId: "1:203989144161:web:88273bf2b917ddc0a65020",
+      measurementId: "G-9350J62Z5H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ✅ جلب id من الرابط
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+
+    const container = document.getElementById("productDetails");
+    const productNumberElement = document.getElementById("productNumber");
+
+    // ✅ دالة لتنسيق رقم المنتج
+    function formatProductId(index) {
+      if (typeof index !== 'number' || index < 1) return "---";
+      return String(index).padStart(3, '0');
+    }
+
+    async function loadProduct() {
+      if (!productId) {
+        productNumberElement.textContent = "---";
+        container.innerHTML = "<p class='error-message'>❌ لم يتم تمرير معرف المنتج.</p>";
+        return;
+      }
+
+      try {
+        // 💡 الخطوة 1: جلب كل المنتجات مرتبة حسب حقل 'timestamp' تصاعدياً
+        const productsCollection = collection(db, "products");
+        const q = query(productsCollection, orderBy("timestamp", "asc")); 
+        const querySnapshot = await getDocs(q);
+
+        let productData = null;
+        let productIndex = -1;
+        
+        // 💡 الخطوة 2: البحث عن المنتج الحالي وتحديد فهرسه (ترتيبه)
+        querySnapshot.docs.forEach((doc, index) => {
+            if (doc.id === productId) {
+                productData = doc.data();
+                // تخزين الترتيب الفعلي (يبدأ من 1)
+                productIndex = index + 1; 
+            }
+        });
+
+        if (productData) {
+            // 💡 الخطوة 3: عرض رقم المنتج والبيانات
+            productNumberElement.textContent = formatProductId(productIndex);
+
+            container.innerHTML = `
+              <div class="product-header">
+                <h2>${productData.name || "منتج بدون اسم"}</h2>
+                <img src="${productData.image || ""}" alt="صورة المنتج" class="product-image">
+              </div>
+              <div class="product-details-grid">
+                <div class="detail-item">
+                  <span class="detail-icon">🏷️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">النوع</span>
+                    <span class="detail-value">${productData.type || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">💰</span>
+                  <div class="detail-content">
+                    <span class="detail-label">السعر</span>
+                    <span class="detail-value">${productData.price || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">⏱️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">مدة الإنجاز</span>
+                    <span class="detail-value">${productData.duration || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📏</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الحجم</span>
+                    <span class="detail-value">${productData.size || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">⚖️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الوزن</span>
+                    <span class="detail-value">${productData.weight || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🔧</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الاستعمال</span>
+                    <span class="detail-value">${productData.usage || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🎨</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الألوان</span>
+                    <span class="detail-value">${productData.colors || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">✨</span>
+                  <div class="detail-content">
+                    <span class="detail-label">نوع التزيين والرموز</span>
+                    <span class="detail-value">${productData.decoration || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🏭</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الإنتاج</span>
+                    <span class="detail-value">${productData.production || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📍</span>
+                  <div class="detail-content">
+                    <span class="detail-label">المصدر</span>
+                    <span class="detail-value">${productData.source || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">👥</span>
+                  <div class="detail-content">
+                    <span class="detail-label">عدد المتدخلين</span>
+                    <span class="detail-value">${productData.people || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🧱</span>
+                  <div class="detail-content">
+                    <span class="detail-label">المواد الأولية</span>
+                    <span class="detail-value">${productData.materials || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📋</span>
+                  <div class="detail-content">
+                    <span class="detail-label">مراحل الإنجاز</span>
+                    <span class="detail-value">${productData.steps || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🛠️</span>
+                  <div class="detail-content">
+                    <span class="detail-label">الأدوات المستعملة</span>
+                    <span class="detail-value">${productData.tools || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">🔬</span>
+                  <div class="detail-content">
+                    <span class="detail-label">التقنيات المستعملة</span>
+                    <span class="detail-value">${productData.techniques || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">💡</span>
+                  <div class="detail-content">
+                    <span class="detail-label">التقنيات المبتكرة</span>
+                    <span class="detail-value">${productData.innovation || "-"}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-icon">📅</span>
+                  <div class="detail-content">
+                    <span class="detail-label">تاريخ الإضافة</span>
+                    <span class="detail-value">${productData.timestamp?.toDate ? productData.timestamp.toDate().toLocaleString() : "-"}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="action-buttons">
+                <a href="javascript:history.back()" class="btn-back">← العودة</a>
+              </div>
+            `;
+
+        } else {
+            productNumberElement.textContent = "---";
+            container.innerHTML = "<p class='error-message'>❌ المنتج غير موجود.</p>";
+        }
+      } catch (error) {
+        console.error("خطأ في جلب المنتج:", error);
+        productNumberElement.textContent = "خطأ";
+        container.innerHTML = "<p class='error-message'>⚠️ حدث خطأ أثناء تحميل البيانات أو الترتيب.</p>";
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
